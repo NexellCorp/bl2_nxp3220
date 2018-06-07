@@ -76,12 +76,11 @@ void serial_set_baudrate (int channel, int uclk, int baud_rate)
 	mmio_set_32((base + LCR), DLAB);
 
 	/* step xx. calculates an integer at the baud rate */
-//	ibrd = ((uclk / (baud_rate/1)) * 16);					// ibrd = 8, 115200bps
-	ibrd = 54;
+	ibrd = (uclk / ((baud_rate/1) * 16));					// ibrd = 8, 115200bps
 
 	/* step xx. calculates an fractional at the baud rate */
-//	fbrd = ((uclk % ((((baud_rate/1) *16) + 32) * 64)) / (baud_rate / 1) * 16); // fbrd = 0,
-	fbrd = 16;
+	fbrd = ((uclk % ((((baud_rate/1) * 16) + 32) * 64))			\
+					/ (baud_rate / 1) * 16);		// fbrd = 0,
 
 //	mmio_write_32((base + DLH), ((ibrd >> 8) & 0xFF));			// Divider Latch High 8bit
 	mmio_write_32((base + DLL), ((ibrd >> 0) & 0xFF));			// Divider Latch Low 8bit

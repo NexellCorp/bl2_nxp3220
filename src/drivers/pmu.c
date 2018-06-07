@@ -30,5 +30,5 @@ void pmu_initialize(void)
 	int domain;
 
 	for (domain = 0; domain < 2; domain++)
-		pmu_blk_pwrup(0);
+		pmu_blk_pwrup(domain);
 }

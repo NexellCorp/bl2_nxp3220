@@ -132,10 +132,10 @@ int hw_write_leveling(void)
 
 	/* step 03. display the write-leveling information */
 	wrlvl_rslt = ((reg_read_phy(WRLVL_CTRL)	>> 0) & lane_mask);
-	printf("####### Write Leveling - Information ########\n");
-	printf("Write Leveling %s (%d) \n", (wrlvl_rslt == 0x3)
+	printf("####### Write Leveling - Information ########\r\n");
+	printf("Write Leveling %s (%d) \r\n", (wrlvl_rslt == 0x3)
 		? "Pass!!" : "Failed!!", wrlvl_rslt);
-	printf("#############################################\n");
+	printf("#############################################\r\n");
 
 	return true;
 }
@@ -147,10 +147,10 @@ void hw_bit_leveling_information(void)
 	int lane, dq_num;
 	int inc, step;
 
-	printf("######## Bit Leveling - Information #########\n");
-	printf("######### Write Trim - Information ##########\n");
+	printf("######## Bit Leveling - Information #########\r\n");
+	printf("######### Write Trim - Information ##########\r\n");
 	for (lane = 0; lane < MEM_STRB_WIDTH; lane++) {
-		printf("######### Lane%d Trim - Information ##########\n", lane);
+		printf("######### Lane%d Trim - Information ##########\r\n", lane);
 		bit_lvl_failure_status = (reg_read_phy(DYNAMIC_WRITE_BIT_LVL)
 			>> (20 + lane)) & 0x1;
 		if (!bit_lvl_failure_status) {
@@ -160,16 +160,16 @@ void hw_bit_leveling_information(void)
 				op_bitwise_trim = reg_read_phy(OP_DQ_DM_DQS_BITWISE_TRIM);
 				inc  = ((op_bitwise_trim >> 7) & 0x1);
 				step = ((op_bitwise_trim >> 0) & 0x7F);
-				printf("%s%d: %s : %d \n",
+				printf("%s%d: %s : %d \r\n",
 					(dq_num != 8) ? ((dq_num != 9) ? "DQ":"DQS"):("DM"),
 				dq_num, (inc ? "INCREMNET": (step != 0 ? "DECREMENT": "NORMAL")), step);
 			}
 		}
 	}
 
-	printf("######## Read Trim - Information #########\n");
+	printf("######## Read Trim - Information #########\r\n");
 	for (lane = 0; lane < MEM_STRB_WIDTH; lane++) {
-		printf("######### Lane%d Trim - Information ##########\n", lane);
+		printf("######### Lane%d Trim - Information ##########\r\n", lane);
 		bit_lvl_failure_status = (reg_read_phy(DYNAMIC_BIT_LVL)
 			>> (14 + lane)) & 0x1;
 		if (!bit_lvl_failure_status) {
@@ -179,7 +179,7 @@ void hw_bit_leveling_information(void)
 				ip_bitwise_trim = reg_read_phy(IP_DQ_DQS_BITWISE_TRIM);
 				inc  = ((ip_bitwise_trim >> 7) & 0x1);
 				step = ((ip_bitwise_trim >> 0) & 0x7F);
-				printf("%s%d: %s : %d \n", (dq_num != 8) ? "DQ" : "DQS",
+				printf("%s%d: %s : %d \r\n", (dq_num != 8) ? "DQ" : "DQS",
 					dq_num, (inc ? "INCREMNET": (step != 0 ? "DECREMENT": "NORMAL")), step);
 			}
 		}
@@ -188,10 +188,10 @@ void hw_bit_leveling_information(void)
 	analog_dll_lock = (reg_read_phy(UNQ_ANALOG_DLL_2) & 0x3);
 	dll_ps = (get_period_ps()/analog_dll_lock);
 
-	printf("#############################################\n");
-	printf("1-Cycle Period(ps): %d, 1-Step Period(ps): %d \n",
+	printf("#############################################\r\n");
+	printf("1-Cycle Period(ps): %d, 1-Step Period(ps): %d \r\n",
 		get_period_ps(), dll_ps);
-	printf("Lock Value: 0x%08X \n", analog_dll_lock);
+	printf("Lock Value: 0x%08X \r\n", analog_dll_lock);
 }
 
 int hw_bit_leveling(void)

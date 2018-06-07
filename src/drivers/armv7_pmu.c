@@ -25,7 +25,7 @@ unsigned int pmu_get_count (void)
 	unsigned int value;
 
 	/* Reead CCNT Register (PMCCNTR,) */
-	__asm__ __volatile__ ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(value));
+	__asm__ __volatile__ ("MRC p15, 0, %0, c9, c13, 0\t\r\n": "=r"(value));
 
 	return value;
 }
@@ -46,19 +46,19 @@ static inline void pmu_counter_initialize (int do_reset, int enable_divider)
 	value |= 16;
 
 	/* program the performance-counter control-register: (PMCR) */
-	__asm__ __volatile__ ("MCR p15, 0, %0, c9, c12, 0\t\n" :: "r"(value));
+	__asm__ __volatile__ ("MCR p15, 0, %0, c9, c12, 0\t\r\n" :: "r"(value));
 
 	/* enable user-mode access to the performance counter  (PMUSERENR) */
-	__asm__ __volatile__ ("MCR p15, 0, %0, C9, C14, 0\n\t" :: "r"(1));
+	__asm__ __volatile__ ("MCR p15, 0, %0, C9, C14, 0\r\n\t" :: "r"(1));
 
 	/* enable all counters: (PMCNTENSET) */
-	__asm__ __volatile__ ("MCR p15, 0, %0, c9, c12, 1\t\n" :: "r"(0x8000000f));
+	__asm__ __volatile__ ("MCR p15, 0, %0, c9, c12, 1\t\r\n" :: "r"(0x8000000f));
 
 	/* clear overflows: (PMOVSR) */
-	__asm__ __volatile__ ("MCR p15, 0, %0, c9, c12, 3\t\n" :: "r"(0x8000000f));
+	__asm__ __volatile__ ("MCR p15, 0, %0, c9, c12, 3\t\r\n" :: "r"(0x8000000f));
 
 	/* disable counter overflow interrupts (just in case) (PMINTENCLR) */
-	__asm__ __volatile__ ("MCR p15, 0, %0, C9, C14, 2\n\t" :: "r"(0x8000000f));
+	__asm__ __volatile__ ("MCR p15, 0, %0, C9, C14, 2\r\n\t" :: "r"(0x8000000f));
 }
 
 void pmu_counter_deinitialize (int do_reset, int enable_divider)
@@ -77,19 +77,19 @@ void pmu_counter_deinitialize (int do_reset, int enable_divider)
 	value |= 16;
 
 	/* program the performance-counter control-register: */
-	__asm__ __volatile__ ("MCR p15, 0, %0, c9, c12, 0\t\n" :: "r"(0));
+	__asm__ __volatile__ ("MCR p15, 0, %0, c9, c12, 0\t\r\n" :: "r"(0));
 
 	/* enable user-mode access to the performance counter*/
-	__asm__ __volatile__ ("MCR p15, 0, %0, C9, C14, 0\n\t" :: "r"(1));
+	__asm__ __volatile__ ("MCR p15, 0, %0, C9, C14, 0\r\n\t" :: "r"(1));
 
 	/* enable all counters: */
-	__asm__ __volatile__ ("MCR p15, 0, %0, c9, c12, 1\t\n" :: "r"(0x8000000f));
+	__asm__ __volatile__ ("MCR p15, 0, %0, c9, c12, 1\t\r\n" :: "r"(0x8000000f));
 
 	/* clear overflows: */
-	__asm__ __volatile__ ("MCR p15, 0, %0, c9, c12, 3\t\n" :: "r"(0x8000000f));
+	__asm__ __volatile__ ("MCR p15, 0, %0, c9, c12, 3\t\r\n" :: "r"(0x8000000f));
 
 	/* disable counter overflow interrupts (just in case)*/
-	__asm__ __volatile__ ("MCR p15, 0, %0, C9, C14, 2\n\t" :: "r"(0x8000000f));
+	__asm__ __volatile__ ("MCR p15, 0, %0, C9, C14, 2\r\n\t" :: "r"(0x8000000f));
 }
 
 void pmu_delay_us(volatile unsigned int us)
@@ -108,7 +108,7 @@ void pmu_delay_us(volatile unsigned int us)
 	} while (pmu_us < us);
 
 #if DEBUG_CONSOLE
-	printf("pmu_ps: %d, us: %d, cycle: %d \r\n", pmu_us, us, cycle);
+	printf("pmu_ps: %d, us: %d, cycle: %d \r\r\n", pmu_us, us, cycle);
 #endif
 }
 

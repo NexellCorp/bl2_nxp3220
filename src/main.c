@@ -50,7 +50,7 @@ void main(void)
 #if defined(SIMPLE_MEMTEST)
 	simple_memtest();
 #elif defined(STANDARD_MEMTEST)
-	standard_memtester()
+	standard_memtester();
 #endif
 	plat_load();
 }

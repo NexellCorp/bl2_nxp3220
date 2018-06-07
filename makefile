@@ -118,7 +118,6 @@ bin:
 
 gen:
 	./tools/rsa_sign_new -n reference-nsih/nsih_vtk_ddr3_800Mhz.txt -i out/bl2-${BOARD}.bin -b tools/bootkey -u tools/userkey -k bl2 -l 0xFFFF8000 -s 0xFFFF8000 -t
-	./tools/rsa_sign_new -n reference-nsih/nsih_sss_256.txt -i tools/sss -b tools/bootkey -u tools/userkey -k bl2 -l 0x60000000 -s 0x60000000 -t
 
 mkobjdir:
 ifeq ($(OS),Windows_NT)
