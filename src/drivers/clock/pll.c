@@ -216,7 +216,7 @@ int pll_initialize(void)
 
 	get_pmsk_parser(pm, sk, sscg);
 
-	for (i = 3; i < NUMBER_OF_MAX_PLL; i++) {
+	for (i = 2; i < NUMBER_OF_MAX_PLL; i++) {
 		ret = nx_change_pll(i, pm[i], sk[i], sscg[i]);
 		if (ret != true) {
 //			PANIC("pll clock is not stable!!\r\n");
