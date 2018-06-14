@@ -62,7 +62,7 @@ int sm5011_write(unsigned char reg, unsigned char *data, unsigned char mask)
 	if (!i2c_gpio_write(SM5011_SLAVE_ADDR, reg, &value, 1))
 		return 0;
 
-	return value;
+	return 1;
 }
 
 int sm5011_sboot_output_cntl(unsigned char addr, unsigned char cntl,
