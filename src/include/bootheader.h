@@ -182,7 +182,7 @@ struct ddrphy_drvds_info {
 	uint8_t adrctl_drive;							/* 0x00 : address line drive strength	*/
 	uint8_t clk_drive;							/* 0x01 : clock line drive strength	*/
 	uint8_t dq_dqs_drive;							/* 0x02 : dq, dqs line drive strength	*/
-	uint8_t reserved0;							/* 0x03 : reserved0			*/
+	uint8_t io_mode;							/* 0x03 : io_mode (odt)			*/
 	uint32_t reserved1;							/* 0x04 ~ 0x08 : reserved1		*/
 };
 

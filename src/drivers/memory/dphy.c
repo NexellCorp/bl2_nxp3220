@@ -331,7 +331,7 @@ void phy_set_init_values (void)
 #else
 	reg_value = ((0x1 <<  0)  |						// odt_sel [0]
 		     (0x1 <<  1)  |						// odt_en  [1]
-		     (0x0 <<  2) |						// io_mode [2]
+		     (g_nsih->phy_dsinfo.io_mode <<  2) |			// io_mode [2]
 		     (g_nsih->phy_dsinfo.dq_dqs_drive <<  4)  |			// dq_dqs_drive [7:4]
 		     (0x0 <<  8)  |						// extra_oen_clk [8]
 //		     (0x0 <<  9)  |						// no_external_dll, legacy [9]

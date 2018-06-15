@@ -47,7 +47,6 @@
 #define DATA_XFR_CONFIG                 0x44
 #define HOST_CMD_ISSUE                  0x48
 #define ODT_EN_CONFIG                   0x4C
-#define MEM_WIDTH                       0x50
 #define ZQC_CONFIG                      0x54
 #define AUTO_SCL_CTRL                   0x58
 #define AGENT_REF_PRIORITY              0x5C

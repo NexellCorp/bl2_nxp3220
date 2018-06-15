@@ -159,7 +159,7 @@ void mem_init_seq_ddr3 (int is_resume)
   	  * WARNING: 200 us is required before RST_N goes inactive.
   	  * Insert software function to wait 200us here.
   	  */
-	udelay(200);
+	udelay(200000);
 
 	/* 03. CKE must be LOW 10ns prior to RESET# transitioning HIGH A`lready taken care of. So Deasserting RESET# */
 	mmio_set_32((DCTRL_BASE_ADDR + MEM_WIDTH), (1 << 4)|(1 << 1));		// dif_reset_n
@@ -169,22 +169,18 @@ void mem_init_seq_ddr3 (int is_resume)
 	* WARNING: 500 us is required after RST_N goes inactive before CKE goes active.
 	* Insert software function to wait 500us here..
 	*/
-	udelay(500);
+	udelay(500000);
 
 	/* Step 05. CKE may be brought HIGH and only NOP or DES commands may be issued for tXPR */
 	int tXPR_MAX = (g_nsih->dii.ac_timing.tRFC + 10);
 	host_cmd_load(HOST_CMD_1_0, 0, CMD_IDLE_NOP, tXPR_MAX);
 
 	// Mode Register
-	wait_cycle = (g_nsih->dii.ac_timing.tMRD * 2);
+	wait_cycle = (g_nsih->dii.ac_timing.tMRD);
 
 	/* Step 06. Issue an MRS command to MR2. */
 	MR2.REG			= 0;
-#if (USE_NSIH_HEADER == 0)
-	MR2.MR2.RTT_WR		= CONFIG_DRAM_MR2_RTT_WR;			// Dynamic ODT (00: Rtt disabled, 01: RZQ/4, 10: RZQ/2, 11: reserved)
-#else
 	MR2.MR2.RTT_WR		= g_nsih->dsinfo.mr2_rtt_wr;			// Dynamic ODT (00: Rtt disabled, 01: RZQ/4, 10: RZQ/2, 11: reserved)
-#endif
 	MR2.MR2.CWL		= (nCWL - 5);					// CAS Write Latency (000: 5CK(tCK>=2.5ns), 001: 6CK(2.5ns>tCK>=1.875ns, 010: 7CK(1.875ns>tCK>=1.25ns), 011: 8CK(1.5ns>tCK>=1.25ns), 100: 9CK(1.25ns>tCK>=1.07ns))
 	host_cmd_load_mr(HOST_CMD_1_1, SDRAM_MODE_REG_MR2, MR2.REG, wait_cycle);
 
@@ -194,26 +190,22 @@ void mem_init_seq_ddr3 (int is_resume)
 
 	// Step 08. Issue an MRS command to MR1.
 	MR1.REG			= 0;
-#if (USE_NSIH_HEADER == 0)
-	MR1.MR1.RTT_Nom0	= ((CONFIG_DRAM_MR1_RTT_Nom >> 0) & 0x1);
-	MR1.MR1.RTT_Nom1	= ((CONFIG_DRAM_MR1_RTT_Nom >> 1) & 0x1);
-	MR1.MR1.RTT_Nom2	= ((CONFIG_DRAM_MR1_RTT_Nom >> 2) & 0x1);
-	MR1.MR1.ODS0		= ((CONFIG_DRAM_MR1_ODS >> 0) & 0x1);
-	MR1.MR1.ODS1		= ((CONFIG_DRAM_MR1_ODS >> 1) & 0x1);
-#else
+	MR1.MR1.DLL		= 0;						// 0: Enable, 1: Disable
+	MR1.MR1.AL		= 0;
 	MR1.MR1.RTT_Nom0	= ((g_nsih->dsinfo.mr1_rtt_nom >> 0) & 0x1);
 	MR1.MR1.RTT_Nom1	= ((g_nsih->dsinfo.mr1_rtt_nom >> 1) & 0x1);
 	MR1.MR1.RTT_Nom2	= ((g_nsih->dsinfo.mr1_rtt_nom >> 2) & 0x1);
 	MR1.MR1.ODS0		= ((g_nsih->dsinfo.mr1_ods >> 0) & 0x1);
 	MR1.MR1.ODS1		= ((g_nsih->dsinfo.mr1_ods >> 1) & 0x1);
-#endif
+	MR1.MR1.QOff		= 0;
+	MR1.MR1.WL		= 0;
 	host_cmd_load_mr(HOST_CMD_1_3, SDRAM_MODE_REG_MR1, MR1.REG, wait_cycle);
 
 	// Step 09. Issue an MRS command to MR0.
 	if ((nCL >= 5) && (11 >= nCL))
 		mr0_cl = ((nCL -  4) << 1);
 	else if ((nCL >= 12) && (16 >= nCL))
-		mr0_cl = ((nCL - 12) << 1) + 1;
+		mr0_cl = (((nCL - 12) << 1) | 0x1);
 	else
 		mr0_cl = 0;
 
@@ -236,11 +228,7 @@ void mem_init_seq_ddr3 (int is_resume)
 	 * Step 10. Issue a ZQCL command to calibrate Rtt and Ron values for the process voltage temperature
 	 * (PVT). Prior to normal operation, tZQinit must be satisfied.
 	 */
- #if (USE_NSIH_HEADER == 0)
-	wait_cycle = tZQInit;
- #else
 	wait_cycle = g_nsih->dii.ac_timing.tZQinit;
- #endif
 	host_cmd_load(HOST_CMD_1_5, 0x04, CMD_ZQ_CAL, wait_cycle);
 
 	// Step 11. Issue 6 command to the intialization state m/c and wait for it to be done

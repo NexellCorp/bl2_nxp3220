@@ -522,7 +522,7 @@ void ctrl_set_init_values(void)
 		     ((BL + 1)			<< 12)			|	// rd2rd_csc_dly
 		     ((BL - 1)			<< 16)			|	// wr2wr_dly
 		     (BL			<< 20)			|	// wr2wr_csc_dly
-		     (round_up((rl_d + ac_timing->tCCD_dclk
+		     (round_up((double)(rl_d + ac_timing->tCCD_dclk
 		     			- 2 - WL)/2) << 24)		|	// rd2wr_dly
 		     ((RL_PARAM + C2D + MAX_LATENCY - WL_PARAM
 		     		+ 4 + (ECC_DLY | 0x1)) << 28));			// rmw_dly
