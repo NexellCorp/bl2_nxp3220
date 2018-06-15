@@ -51,4 +51,6 @@ set_stack:
         sub	sp, sp, #0x400							/* Hader + User-Key + Booy Key	*/
 	sub     sp, sp, #BL2_STACK_SIZE
 
+	bl	armv7_pmu_init
+
 	bl	main

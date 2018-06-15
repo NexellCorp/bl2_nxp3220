@@ -16,7 +16,7 @@
 
 void udelay(volatile unsigned int us)
 {
-#if 0
+#if 1
 	pmu_delay_us(us);
 #else
 	volatile unsigned int i, j;
