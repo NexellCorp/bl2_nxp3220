@@ -3,7 +3,7 @@
 FFFF0000	// 0x008	Load Address for bootloader
 FFFF0000	// 0x00C	Launch Address for bootloader
 0002C400	// 0x010	Device Address
-0004C400	// 0x014
+0022C400	// 0x014
 00000000	// 0x018
 00000000	// 0x01C
 // Clock(PLL) Registers
