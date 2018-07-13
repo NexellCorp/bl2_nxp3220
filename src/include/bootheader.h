@@ -23,7 +23,8 @@
 struct devboot_info {
 	uint32_t s_device_addr;
 	uint32_t n_device_addr;
-	uint32_t reserved[2];
+	uint32_t sf_device_addr;
+	uint32_t reserved[1];
 };
 
 struct clock_info {

@@ -18,6 +18,7 @@ struct platform_info {
 	unsigned int is_sss_f;
 	unsigned int s_dev_addr;
 	unsigned int n_dev_addr;
+	unsigned int sf_dev_addr;
 	void (*esr_func)(void);
 };
 
