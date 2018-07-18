@@ -27,11 +27,14 @@ int plat_load(void)
 		= ((struct nx_bootmanager *)RE_HEADER_BASEADDR);
 	struct platform_info pi;
 
-	pi.is_sss_f = pbm->bi.is_sss_f;
+	pi.is_loadmark = ((pbm->bi.is_sss_f << 8) |
+			  (pbm->bi.is_n_secure_os << 4) |
+			  (pbm->bi.is_secure_os << 0));
 	pi.s_dev_addr = pbm->bi.dbi.s_device_addr;
 	pi.n_dev_addr = pbm->bi.dbi.n_device_addr;
 	pi.sf_dev_addr = pbm->bi.dbi.sf_device_addr;
-	pi.esr_func = enter_self_refresh;
+	pi.ensr_func = enter_self_refresh;
+	pi.exsr_func = exit_self_refresh;
 
 	return smc_call(SIP_PLATFORM_LOAD, (int)&pi, 0, 0);
 }
