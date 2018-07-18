@@ -18,9 +18,9 @@
 
 #define SRAM_BASEADDR			0xFFFF0000
 
-#define SRAM_BL2_BASEADDR		(SRAM_BASEADDR + 0x8000)
+#define SRAM_BL2_BASEADDR		(SRAM_BASEADDR + 0xA000)
 #define SRAM_SIZE			(64 *1024)
-#define BL2_SRAM_SIZE			(32 * 1024)
+#define BL2_SRAM_SIZE			(24 * 1024)
 #define	BL2_STACK_SIZE			0x400
 
 /* SDRAM in Boot Loader 0 File Format */
