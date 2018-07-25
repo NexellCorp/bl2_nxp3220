@@ -39,14 +39,14 @@ void pmic_board_init(void)
 
 	/* ARM Voltage (Default: 1.00)	*/
 //	mVol = sm5011_get_buck_vol(asv_get_arm_vol());
-//	sm5011_sboot_output_cntl(BUCK_2_CNTL_REG_1_ADDR, OUTPUT_ON,
+	sm5011_output_cntl(BUCK_2_CNTL_REG_1_ADDR, OUTPUT_ON,
 //					mVol, 0xFF);
-//					BUCK_V_1000mV, 0xFF);
+					BUCK_V_1000mV, 0xFF);
 	/* Core Voltage (Default: 1.xV) */
 //	mVol = sm5011_get_buck_vol(asv_get_core_vol());
-//	sm5011_sboot_output_cntl(BUCK_5_CNTL_REG_1_ADDR, OUTPUT_ON,
+	sm5011_output_cntl(BUCK_5_CNTL_REG_1_ADDR, OUTPUT_ON,
 //					mVol, 0xFF);
-//					BUCK_V_1000mV, 0xFF);
+					BUCK_V_1000mV, 0xFF);
 
 	/* DDRC Voltage (Default: 1.0V) */
 	sm5011_sboot_output_cntl(BUCK_4_CNTL_REG_1_ADDR, OUTPUT_ON,

@@ -94,3 +94,25 @@ int sm5011_sboot_output_cntl(unsigned char addr, unsigned char cntl,
 
 	return TRUE;
 }
+
+int sm5011_output_cntl(unsigned char addr, unsigned char cntl,
+				unsigned char data, unsigned char mask)
+{
+	unsigned char c_data, rdata;
+
+	if(cntl == OUTPUT_ON) {
+		c_data = OUTPUT_ON;
+		if(!sm5011_write((addr + 1), &data, mask))
+			return FALSE;
+
+		if(!sm5011_write(addr, &c_data, SM5011_OUTPUT_CNTL_MASK))
+			return FALSE;
+
+	} else {
+		c_data = OUTPUT_OFF;
+		if(!sm5011_write(addr, &c_data, SM5011_OUTPUT_CNTL_MASK))
+			return FALSE;
+	}
+
+	return TRUE;
+}

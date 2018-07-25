@@ -18,14 +18,23 @@
 
 #define BUCK_2_CNTL_REG_1_ADDR		0x2B
 #define BUCK_2_CNTL_REG_2_ADDR		0x2C
+#define BUCK_2_CNTL_REG_3_ADDR		0x2D
+
 #define BUCK_3_CNTL_REG_1_ADDR		0x2E
 #define BUCK_3_CNTL_REG_2_ADDR		0x2F
+#define BUCK_3_CNTL_REG_3_ADDR		0x30
+
 #define BUCK_4_CNTL_REG_1_ADDR		0x31
 #define BUCK_4_CNTL_REG_2_ADDR		0x32
+#define BUCK_4_CNTL_REG_3_ADDR		0x33
+
 #define BUCK_5_CNTL_REG_1_ADDR		0x34
 #define BUCK_5_CNTL_REG_2_ADDR		0x35
+#define BUCK_5_CNTL_REG_3_ADDR		0x36
+
 #define BUCK_6_CNTL_REG_1_ADDR		0x37
 #define BUCK_6_CNTL_REG_2_ADDR		0x38
+#define BUCK_6_CNTL_REG_3_ADDR		0x39
 
 #define LDO_15_CNTL_REG_1_ADDR		0x58
 #define LDO_15_CNTL_REG_2_ADDR		0x59
@@ -89,5 +98,7 @@ int sm5011_get_ldo_vol(int mvol);
 int sm5011_read(unsigned char reg, unsigned char *data, unsigned char mask);
 int sm5011_write(unsigned char reg, unsigned char *data, unsigned char mask);
 int sm5011_sboot_output_cntl(unsigned char addr, unsigned char cntl,
+				unsigned char data, unsigned char mask);
+int sm5011_output_cntl(unsigned char addr, unsigned char cntl,
 				unsigned char data, unsigned char mask);
 #endif	/* #ifndef __SM5011_H__ */
