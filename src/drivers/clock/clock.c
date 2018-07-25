@@ -38,16 +38,16 @@ int clock_initialize(void)
 	get_optimal_div(req_pll[3], SYS_0_AXI_CLK_MAX,
 		&div[3][0], &div[3][1]);					/* SYS.AXI.DYNAMIC_DIVIER_VALUE	*/
 
-	base = (volatile unsigned int*)(PHY_BASEADDR_CMU_DDR_MODULE);
+	base = (volatile unsigned char*)(PHY_BASEADDR_CMU_DDR_MODULE);
 //	mmio_write_32((base + 0x200), 0);
 	mmio_write_32((base + 0x260), 2-1);					// DDR
 //	mmio_write_32((base + 0x400), 0);
 	mmio_write_32((base + 0x460), 3-1);//div[0][0] - 1);			// DDR AXI
 	mmio_write_32((base + 0x464), 2-1);//div[1][0] - 1);			// DDR APB
 //	mmio_write_32((base + 0x660), 2-1);//div[1][0] - 1);			// PLL_DDR0
-	base = (volatile unsigned int*)(PHY_BASEADDR_CMU_CPU_MODULE);
+	base = (volatile unsigned char*)(PHY_BASEADDR_CMU_CPU_MODULE);
 //	mmio_write_32((base + 0x260), 0x4-1); //div[2][0]);			// CPU AXI
-	base = (volatile unsigned int*)(PHY_BASEADDR_CMU_SYS_MODULE);
+	base = (volatile unsigned char*)(PHY_BASEADDR_CMU_SYS_MODULE);
 //	mmio_write_32((base + 0x260), 0x2-1); //div[3][0]);			// SYS AXI
 
 	if (true != pll_initialize())

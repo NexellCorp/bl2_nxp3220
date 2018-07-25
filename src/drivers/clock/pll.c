@@ -42,7 +42,10 @@ void pll_set_oscmux(unsigned int num, unsigned int muxsel)
 	struct nx_pll_reg *base
 		= (struct nx_pll_reg*)get_pll_baseaddr(num);
 
-	mmio_set_32(&base->pll_ctrl, (muxsel << 3));				/* OSC_MUX (0: OSCCLK, 1:PLL_FOUT) */
+	if (muxsel != PLL_MUX_PLL_FOUT)
+		mmio_clear_32(&base->pll_ctrl, (1 << 3));
+	else
+		mmio_set_32(&base->pll_ctrl, (1 << 3));				/* OSC_MUX (0: OSCCLK, 1:PLL_FOUT) */
 }
 
 /* Check the PLL-Lock State (PLL(Phase Locked Loop)or Oscillator) */
@@ -180,20 +183,20 @@ int nx_change_pll(int index, int pm, int sk, int sscg)
 {
 	struct nx_pll_reg *base =
 		(struct nx_pll_reg *)get_pll_baseaddr(index);
-	int reg_value;
+	unsigned int reg_value;
 
 	if (clock_is_stable(index))
 		return false;
 
 	pll_set_oscmux(index, PLL_MUX_PLL_FOUT);
 
-	if (mmio_read_32(&base->pll_dbg0) != 5) {
-		mmio_write_32(&base->pll_cnt0, 5);
-		mmio_write_32(&base->pll_cnt1, 5);
-		mmio_write_32(&base->pll_cnt2, 5);
+	if (mmio_read_32(&base->pll_cnt0) != 100) {
+		mmio_write_32(&base->pll_cnt0, 100);
+		mmio_write_32(&base->pll_cnt1, 100);
+		mmio_write_32(&base->pll_cnt2, 100);
 
 		/* Depending on the model pll different latency. */
-		if ((index == PLLCPU) || (index == PLLDDR1))
+		if ((index == PLLCPU) || (index == PLLDDR0))
 			reg_value = (3000 * ((pm & 0xFFFF) + 1));
 		else
 			reg_value = ( 200 * ((pm & 0xFFFF) + 1));
@@ -203,27 +206,53 @@ int nx_change_pll(int index, int pm, int sk, int sscg)
 	mmio_write_32(&base->pll_cfg1, pm);
 	mmio_write_32(&base->pll_cfg2, sk);
 	mmio_write_32(&base->pll_ctrl1, sscg);
-	mmio_set_32(&base->pll_ctrl, PLL_DIRTYFLAG);				/* Used as a flag when changing the PLL. */
-	mmio_set_32(&base->pll_ctrl, PLL_RUN_CHANGE);				/* Change the PLL */
+
+	/* @brief: when "CLKSEL_DONE" is 0, retry pll locking  (for PLLDDR0) */
+	do {
+		mmio_set_32(&base->pll_ctrl, PLL_DIRTYFLAG);			/* Used as a flag when changing the PLL. */
+		mmio_set_32(&base->pll_ctrl, PLL_RUN_CHANGE);			/* Change the PLL */
+
+		if (clock_is_stable(index))
+			return false;
+
+	} while (((mmio_read_32(&base->pll_ctrl) >> 16) & 0x1) == 0);
 
 	return true;
 }
 
 int pll_initialize(void)
 {
+	volatile unsigned char *base;
+	unsigned int reg_value[2];
 	int pm[5], sk[5], sscg[5];
 	int i, ret = false;
 
 	get_pmsk_parser(pm, sk, sscg);
 
 	for (i = 2; i < NUMBER_OF_MAX_PLL; i++) {
+		/* @brief: save the source clock register (for PLLDDR0) */
+		if (i == PLLDDR0) {
+			base = (volatile unsigned char *)(PHY_BASEADDR_CMU_DDR_MODULE);
+			reg_value[0] = mmio_read_32(base + 0x200);
+			reg_value[1] = mmio_read_32(base + 0x400);
+		}
+		/* @brief: chagne the source clock (for PLLDDR0) */
+		mmio_write_32((base + 0x200), (i == 3) ? 1 : 0);
+		mmio_write_32((base + 0x400), (i == 3) ? 1 : 0);
+
 		ret = nx_change_pll(i, pm[i], sk[i], sscg[i]);
 		if (ret != true) {
 //			PANIC("pll clock is not stable!!\r\n");
 			return false;
 		}
 		clock_is_stable(i);
+
+		if (i == PLLDDR0) {
+			/* @brief: restore the source clokc register */
+			mmio_write_32((base + 0x200), reg_value[0]);
+			mmio_write_32((base + 0x400), reg_value[1]);
+		}
 	}
 
-	return true;
+	return ret;
 }
