@@ -61,11 +61,11 @@ void pmic_board_init(void)
 
 	/* DDR I/O Voltage (Default: 1.5V) */
 	sm5011_sboot_output_cntl(BUCK_3_CNTL_REG_1_ADDR, OUTPUT_ON,
-					BUCK_V_1500mV, 0xFF);
+					BUCK_V_1350mV, 0xFF);
 
 	/* DDR Device Voltage (Default: 1.5V) */
 	sm5011_sboot_output_cntl(BUCK_6_CNTL_REG_1_ADDR, OUTPUT_ON,
-					BUCK_V_1500mV, 0xFF);
+					BUCK_V_1350mV, 0xFF);
 	/* DDRC PLL Voltage (Default: 1.8V) */
 	mVol = sm5011_get_ldo_vol(1800);
 	sm5011_sboot_output_cntl(LDO_15_CNTL_REG_1_ADDR, OUTPUT_ON,

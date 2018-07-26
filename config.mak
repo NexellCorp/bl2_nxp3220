@@ -18,6 +18,7 @@ MEMTYPE				?= ddr3
 MEMTEST				?= n
 
 BOARD				?= vtk
+#BOARD				?= trike
 
 # system log Message
 SYSLOG				?= y

@@ -74,6 +74,8 @@ LDO_15 OTP 2800mV = 800mV + (50mV *  40[0x28]) default ON
 
 #define LDO_V_2800mV			0x28
 
+#define BUCK_C_FORCEPWM			0x03
+
 #define OUTPUT_ON			3
 #define OUTPUT_OFF			0
 #if 0

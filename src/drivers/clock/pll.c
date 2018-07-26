@@ -196,7 +196,7 @@ int nx_change_pll(int index, int pm, int sk, int sscg)
 		mmio_write_32(&base->pll_cnt2, 100);
 
 		/* Depending on the model pll different latency. */
-		if ((index == PLLCPU) || (index == PLLDDR0))
+		if ((index == PLLCPU) || (index == PLLDDR1))
 			reg_value = (3000 * ((pm & 0xFFFF) + 1));
 		else
 			reg_value = ( 200 * ((pm & 0xFFFF) + 1));

@@ -72,6 +72,8 @@ int memory_initialize(int is_resume)
 	ret = ddr4_initialize(is_resume);
 #endif
 
+	trimtest();
+
 	NOTICE("Memory Initialize %s! (%d:%d) \r\n\n",
 			(ret >= 0) ? "Done" : "Failed", ret, is_resume);
 

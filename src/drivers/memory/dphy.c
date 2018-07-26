@@ -112,7 +112,7 @@ static int get_period_ps(void)
 	/* step xx. Calcurate the DDRx One Cycle -> Period(ps)  */
 	cycle_period_ps = (1000000/(get_pll_freq(3)/1000000));
 
-	return (cycle_period_ps * 2);
+	return cycle_period_ps;
 }
 
 int hw_write_leveling(void)
@@ -146,52 +146,84 @@ void hw_bit_leveling_information(void)
 	int bit_lvl_failure_status, analog_dll_lock, dll_ps;
 	int lane, dq_num;
 	int inc, step;
+	int once = 0;
 
 	printf("######## Bit Leveling - Information #########\r\n");
-	printf("######### Write Trim - Information ##########\r\n");
+	printf("Write Trim:\r\n");
 	for (lane = 0; lane < MEM_STRB_WIDTH; lane++) {
-		printf("######### Lane%d Trim - Information ##########\r\n", lane);
 		bit_lvl_failure_status = (reg_read_phy(DYNAMIC_WRITE_BIT_LVL)
 			>> (20 + lane)) & 0x1;
 		if (!bit_lvl_failure_status) {
+			if (!once) {
+				printf("	", lane);
+				for (dq_num = 0; dq_num < 10; dq_num++) {
+					printf("%s%d  ",
+						(dq_num != 8) ? ((dq_num != 9) ?
+						" DQ":"DQS"):(" DM"), dq_num);
+				}
+				printf("\r\n");
+				once = 1;
+			}
+			printf("Lane %d  ", lane);
 			for (dq_num = 0; dq_num < 10; dq_num++) {
 				reg_write_phy(PHY_LANE_SEL,
-					((lane * (BITLVL_DLY_WIDTH + 1)) | (dq_num << 8)));
-				op_bitwise_trim = reg_read_phy(OP_DQ_DM_DQS_BITWISE_TRIM);
-				inc  = ((op_bitwise_trim >> 7) & 0x1);
-				step = ((op_bitwise_trim >> 0) & 0x7F);
-				printf("%s%d: %s : %d \r\n",
-					(dq_num != 8) ? ((dq_num != 9) ? "DQ":"DQS"):("DM"),
-				dq_num, (inc ? "INCREMNET": (step != 0 ? "DECREMENT": "NORMAL")), step);
+					((lane * (BITLVL_DLY_WIDTH + 1)) |
+					 (dq_num << 8)));
+				op_bitwise_trim =
+					reg_read_phy(OP_DQ_DM_DQS_BITWISE_TRIM);
+				inc  = ((op_bitwise_trim >> 6) & 0x1);
+				step = ((op_bitwise_trim >> 0) & 0x3F);
+				printf(" %c%2d	",
+					(inc ? '+': (step != 0 ? '-': ' ')), step);
 			}
-		}
+			printf("\r\n");
+		} else
+			printf("bit leveling failure\r\n");
 	}
+	printf("\r\n");
 
-	printf("######## Read Trim - Information #########\r\n");
+	once = 0;
+	printf("Read Trim:\r\n");
 	for (lane = 0; lane < MEM_STRB_WIDTH; lane++) {
-		printf("######### Lane%d Trim - Information ##########\r\n", lane);
 		bit_lvl_failure_status = (reg_read_phy(DYNAMIC_BIT_LVL)
 			>> (14 + lane)) & 0x1;
 		if (!bit_lvl_failure_status) {
+			if (!once) {
+				printf("	", lane);
+				for (dq_num = 0; dq_num < 9; dq_num++) {
+					printf("%s%d  ",
+						(dq_num != 8) ? " DQ":"DQS", dq_num);
+				}
+				printf("\r\n");
+				once = 1;
+			}
+			printf("Lane %d  ", lane);
 			for (dq_num = 0; dq_num < 9; dq_num++) {
 				reg_write_phy(PHY_LANE_SEL,
-					(lane * (BITLVL_DLY_WIDTH + 1)) | (dq_num << 8));
-				ip_bitwise_trim = reg_read_phy(IP_DQ_DQS_BITWISE_TRIM);
-				inc  = ((ip_bitwise_trim >> 7) & 0x1);
-				step = ((ip_bitwise_trim >> 0) & 0x7F);
-				printf("%s%d: %s : %d \r\n", (dq_num != 8) ? "DQ" : "DQS",
-					dq_num, (inc ? "INCREMNET": (step != 0 ? "DECREMENT": "NORMAL")), step);
+					(lane * (BITLVL_DLY_WIDTH + 1)) |
+					(dq_num << 8));
+				ip_bitwise_trim =
+					reg_read_phy(IP_DQ_DQS_BITWISE_TRIM);
+				inc  = ((ip_bitwise_trim >> 6) & 0x1);
+				step = ((ip_bitwise_trim >> 0) & 0x3F);
+				printf(" %c%2d	",
+					(inc ? '+': (step != 0 ? '-': ' ')), step);
 			}
-		}
+			printf("\r\n");
+		} else
+			printf("bit leveling failure\r\n");
 	}
+	printf("\r\n");
 
-	analog_dll_lock = (reg_read_phy(UNQ_ANALOG_DLL_2) & 0x3);
+	analog_dll_lock = ((reg_read_phy(PHY_DLL_ADRCTRL) >> 24) & 0xff);
 	dll_ps = (get_period_ps()/analog_dll_lock);
+	once = (get_period_ps() - dll_ps * analog_dll_lock) * 1000 / analog_dll_lock;
 
 	printf("#############################################\r\n");
-	printf("1-Cycle Period(ps): %d, 1-Step Period(ps): %d \r\n",
-		get_period_ps(), dll_ps);
-	printf("Lock Value: 0x%08X \r\n", analog_dll_lock);
+	printf("1-Cycle Period(ps): %d, 1-Step Period(ps): %d.%d \r\n",
+		get_period_ps(), dll_ps, once);
+	printf("Lock Value: %d\r\n", analog_dll_lock);
+
 }
 
 int hw_bit_leveling(void)
@@ -256,7 +288,7 @@ void phy_set_init_values (void)
   * the speed grade of the memory used and the speed grade support set in the addr phy. Therefore we
   * adjust the latencies to be programmed based on what has been selected for the phy, below.
   */
-  	double one_ns = 1000000000;
+  	float one_ns = 1000000000;
 	int dram_clk_period = (one_ns/get_pll_freq(3))*1000;//1250;	[DEBUG]
 
 	int CMD_TO_DDR = (SWAP_PHASE ? 1 : 2);
@@ -267,8 +299,8 @@ void phy_set_init_values (void)
 	int WRITE_TO_READ = (0xD + 2);
 
 	int RL = g_nsih->dii.ac_timing.RL, WL = g_nsih->dii.ac_timing.WL;
-	double rl_d = RL, wl_d = WL;
-	double true_rl_d = round_up(rl_d / 2), true_wl_d = round_up(wl_d / 2);
+	float rl_d = RL, wl_d = WL;
+	float true_rl_d = round_up(rl_d / 2), true_wl_d = round_up(wl_d / 2);
 
 	int TRUE_RL = (int)true_rl_d, TRUE_WL = (int)true_wl_d;
 
@@ -296,7 +328,7 @@ void phy_set_init_values (void)
 
 	/* step xx. ddr4 support */
 #if defined(DDR4) || defined(LPDDR3)
-	reg_value = (POD_TERM|DDR4_SUPPORT);
+	reg_value = (POD_TERM | DDR4_SUPPORT);
 	reg_write_phy(DDR4_CONFIG_1, reg_value);
 #endif
 
@@ -307,8 +339,9 @@ void phy_set_init_values (void)
 	  */
 	mmio_write_32((DPHY_BASE_ADDR + UNIQUIFY_IO_3), (1 << 24));		// ucal_2step_cal
 #else
-	reg_value = mmio_read_32(DPHY_BASE_ADDR + UNIQUIFY_IO_3);
-	reg_value &= ~(1 << 24);
+//	reg_value = mmio_read_32(DPHY_BASE_ADDR + UNIQUIFY_IO_3);
+//	reg_value &= ~(1 << 24);
+	reg_value = 0;
 	reg_write_phy(UNIQUIFY_IO_3, reg_value);				// ucal_2step_cal
 #endif
 
@@ -398,8 +431,12 @@ void phy_set_init_values (void)
 		     (0x0  <<  8) |						//additive_latency [8:11]
 		     (0x0  << 12) |						//local_odt_ctrl [12:15]
 		     (0x0  << 16) |						//ddr_odt_ctrl_rd [16+:`MEM_CHIP_SELECTS]
-		     (0x1  << 24));						//ddr_odt_ctrl_wr [24+:`MEM_CHIP_SELECTS]
+		     (0x0  << 24));						//ddr_odt_ctrl_wr [24+:`MEM_CHIP_SELECTS]
 
+	if (g_nsih->dii.chip_num >= 2)
+		reg_value |= (0x3 << 24);					//ddr_odt_ctrl_wr [24+:`MEM_CHIP_SELECTS]
+	else
+		reg_value |= (0x1 << 24);					//ddr_odt_ctrl_wr [24+:`MEM_CHIP_SELECTS]
 	reg_value &= ~(0x7 <<  0);
 
 #if defined(DDR2)
@@ -488,7 +525,7 @@ void phy_set_init_values (void)
 		     (DDR4_RTT_WR  << 25));					//enable Rtt_WR after write leveling
 	reg_write_phy(WRLVL_DYN_ODT, reg_value);
 #elif defined(LPDDR3)
-	reg_write_phy(WRLVL_DYN_ODT, 020000);
+	reg_write_phy(WRLVL_DYN_ODT, 0x020000);
 #endif
 #else
 
@@ -596,7 +633,7 @@ void phy_set_init_values (void)
 //	reg_value = 0x00c60046;							// [DEBUG]
 	reg_write_phy(WRLVL_ON_OFF, reg_value);
 
-	double UNIQUIFY_DLY_CHAIN_STEP = 0.010;
+	float UNIQUIFY_DLY_CHAIN_STEP = 0.010;
 
 	// Delay addr/ctrl lines by an extra 1/2 DDR clock period for write leveling
 	#if defined(DDR3) || defined(DDR4) || defined(LPDDR3)

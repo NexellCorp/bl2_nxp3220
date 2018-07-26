@@ -31,7 +31,7 @@
 
 #ifdef SET_GLOBAL_VARIABLES
 
-struct sbi_header *g_nsih
+struct sbi_header const *g_nsih
 	= ((struct sbi_header *const)RE_HEADER_BASEADDR);
 #else
 

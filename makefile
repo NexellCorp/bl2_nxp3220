@@ -7,11 +7,14 @@ LDFLAGS		=	-Bstatic							\
 			-Lsrc/$(DIR_OBJOUTPUT)						\
 			-Wl,--end-group							\
 			-Wl,--build-id=none						\
-			-nostdlib
+			-nostdlib							\
+			-Lsrc/lib -lddr
+
 
 SYS_OBJS	+=	startup.o libnx.o libarmv7.o libplat.o armv7_pmu.o delay.o pll.o cmu.o clock.o serial.o printf.o	\
 			dctrl.o dphy.o ${MEMTYPE}_sdram.o efuse.o memory.o pmu.o gpio.o i2c_gpio.o asv.o pmic.o sm5011.o 	\
 			board_${BOARD}.o smc_entry.o tz.o plat_load.o build_info.o main.o
+
 
 ifeq ($(MEMTEST), y)
 SYS_OBJS	+=	memtester.o
@@ -87,6 +90,11 @@ $(DIR_OBJOUTPUT)/%.o: src/drivers/memory/ddr4/%.c
 	@echo [compile....$<]
 	$(Q)$(CC) -MMD $< -c -o $@ $(CFLAGS) $(SYS_INCLUDES)
 ##################################################################################################
+$(DIR_OBJOUTPUT)/%.o: src/drivers/memory/%.s
+	@echo [compile....$<]
+	$(Q)$(CC) -MMD $< -c -o $@ $(ASFLAG) $(CFLAGS) $(SYS_INCLUDES)
+###################################################################################################
+
 
 ##################################################################################################
 $(DIR_OBJOUTPUT)/%.o: src/board/%.c
@@ -117,7 +125,7 @@ bin:
 	$(Q)$(MAKEBIN) -O binary $(DIR_TARGETOUTPUT)/$(TARGET_NAME).elf $(DIR_TARGETOUTPUT)/$(TARGET_NAME).bin
 
 gen:
-	./tools/rsa_sign -n reference-nsih/nsih_vtk_ddr3_800Mhz.txt -i out/bl2-${BOARD}.bin -b tools/bootkey -u tools/userkey -k bl2 -l 0xFFFFA000 -s 0xFFFFA000 -t
+	./tools/rsa_sign -n reference-nsih/nsih_trike_ddr3_933Mhz.txt -i out/bl2-${BOARD}.bin -b tools/bootkey -u tools/userkey -k bl2 -l 0xFFFF9000 -s 0xFFFF9000 -t
 
 mkobjdir:
 ifeq ($(OS),Windows_NT)
