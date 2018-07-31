@@ -159,7 +159,8 @@ static void get_pmsk_parser(int *pm, int *sk, int *sscg)
 
 		/* step xx. check the k-value (set the sscg) */
 		if ((sk[i] >> PLL_K_BITPOS) & PLL_VAL_BITMASK)
-			sscg[i] = g_nsih->clk[i].sscg;
+			sscg[i] = (g_nsih->clk[i].sscg |
+					(1 << PLL_SSCG_ENB_BITPOS));
 		else
 			sscg[i] = 0;
 	}

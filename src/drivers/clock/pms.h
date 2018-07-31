@@ -20,6 +20,8 @@
 #define PLL_K_BITPOS			16
 #define PLL_VAL_BITMASK			0xFFFF
 
+#define PLL_SSCG_ENB_BITPOS		16
+
 #define	_GET_PLLCFG0_2555X(_MHz, _val)							\
 	_val = (unsigned int)((PLL2555_PMS_##_MHz##MHZ_P << PLL_P_BITPOS) |		\
 		     (PLL2555_PMS_##_MHz##MHZ_M << PLL_M_BITPOS));
