@@ -125,7 +125,7 @@ bin:
 	$(Q)$(MAKEBIN) -O binary $(DIR_TARGETOUTPUT)/$(TARGET_NAME).elf $(DIR_TARGETOUTPUT)/$(TARGET_NAME).bin
 
 gen:
-	./tools/rsa_sign -n reference-nsih/nsih_trike_ddr3_933Mhz.txt -i out/bl2-${BOARD}.bin -b tools/bootkey -u tools/userkey -k bl2 -l 0xFFFF9000 -s 0xFFFF9000 -t
+	./tools/rsa_sign -n reference-nsih/nsih_vtk_ddr3_800Mhz.txt -i out/bl2-${BOARD}.bin -b tools/bootkey -u tools/userkey -k bl2 -l 0xFFFF9000 -s 0xFFFF9000 -t
 
 mkobjdir:
 ifeq ($(OS),Windows_NT)
