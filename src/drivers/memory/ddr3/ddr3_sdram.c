@@ -127,10 +127,10 @@ void exit_self_refresh(void)
 	} while (c_ctrl_st != DRAM_NORMAL_OPERATION);
 }
 
+union DDR3_SDRAM_MR MR0, MR1, MR2, MR3;
+
 void mem_init_seq_ddr3 (int is_resume)
 {
-	union DDR3_SDRAM_MR MR0, MR1, MR2, MR3;
-
 	int mr0_cl, mr0_wr;
 
 	int nCL  = (g_nsih->dii.ac_timing.RL + 0);					// RL + AL  tCK
