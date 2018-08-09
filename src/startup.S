@@ -49,7 +49,6 @@ set_stack:
 	ldr     sp, =SRAM_BL2_BASEADDR
         add     sp, sp, #BL2_SRAM_SIZE						/* Add to internal sram size.	*/
         sub	sp, sp, #0x400							/* Hader + User-Key + Booy Key	*/
-	sub     sp, sp, #BL2_STACK_SIZE
 
 	bl	armv7_pmu_init
 
