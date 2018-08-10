@@ -71,8 +71,14 @@ int memory_initialize(int is_resume)
 #elif defined(DDR4)
 	ret = ddr4_initialize(is_resume);
 #endif
-
-	trimtest();
+	/* @brie: "libddr.a" in manual bit-leveling */
+	if ((g_nsih->cal_mode >> 1) & 0x1)
+		trimtest(0x40000000,
+				(0 << 0) |					/* Bit Cal state	*/
+				(0 << 1) |					/* Center, Margin value */
+				(0 << 2) |					/* Lock Value		*/
+				(1 << 3) |					/* Read Cal enable	*/
+				(1 << 4));					/* Write Cal enable	*/
 
 	NOTICE("Memory Initialize %s! (%d:%d) \r\n\n",
 			(ret >= 0) ? "Done" : "Failed", ret, is_resume);
