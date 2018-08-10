@@ -57,6 +57,9 @@ enum nx_pll {
 
 #define	PLL_DIRTYFLAG		(1 << 1)
 #define PLL_RUN_CHANGE		(1 << 0)					/* PLL Run change start. (Write Only) */
+#define LINK_RESETB		(1 << 0)
+#define LINK_BYPASS		(1 << 1)
+#define UPDATE_CONFIG_DIRECTLY	(1 << 15)
 
 /* Function Define */
 int clock_is_stable(int num);
