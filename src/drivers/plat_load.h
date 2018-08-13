@@ -23,6 +23,8 @@ struct platform_info {
 	/* @brief: Memory Function */
 	void (*ensr_func)(void);
 	void (*exsr_func)(void);
+	/* suspend/power-off function */
+	void (*pmic_poweroff)(void);
 };
 
 /* Function Define */

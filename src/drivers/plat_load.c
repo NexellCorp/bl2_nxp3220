@@ -20,6 +20,7 @@
 
 /* external function define */
 int smc_call(unsigned int r0, unsigned int r1, unsigned int r2, unsigned int r3);
+extern void pmic_poweroff(void);
 
 int plat_load(void)
 {
@@ -35,6 +36,7 @@ int plat_load(void)
 	pi.sf_dev_addr = pbm->bi.dbi.sf_device_addr;
 	pi.ensr_func = enter_self_refresh;
 	pi.exsr_func = exit_self_refresh;
+	pi.pmic_poweroff = pmic_poweroff;
 
 	return smc_call(SIP_PLATFORM_LOAD, (int)&pi, 0, 0);
 }

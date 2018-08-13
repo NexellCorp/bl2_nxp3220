@@ -71,3 +71,21 @@ void pmic_board_init(void)
 	sm5011_sboot_output_cntl(LDO_15_CNTL_REG_1_ADDR, OUTPUT_ON,
 					mVol, 0xFF);
 }
+
+void pmic_poweroff(void)
+{
+	unsigned char data;
+
+	I2C_INIT(SM5011_I2C_GPIO_GRP, SM5011_I2C_SCL, SM5011_I2C_SDA,
+			SM5011_I2C_SCL_ALT, SM5011_I2C_SDA_ALT);
+
+	/* @breif: CNTRL2 - [4]: GLOBALSHDN Bit = 1 (Enable : Do Shutdown) */
+	data = (1 << 4);
+	sm5011_write(CNTRL_REG_2_ADDR, &data, 0xFF);
+
+	/* @breif: PWROFF_REG - [0] GLOBALSHDN Bit = 1 */
+	data = (1 << 0);
+	sm5011_write(PWROFF_REG, &data, 0xFF);
+
+	I2C_DEINIT();
+}

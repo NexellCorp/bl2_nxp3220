@@ -14,7 +14,16 @@
 #ifndef __SM5011_H__
 #define __SM5011_H__
 
-#define SM5011_SLAVE_ADDR		0x8E >> 1
+/* @brief: Slave Address */
+#define SM5011_SLAVE_ADDR		(0x8E >> 1)
+
+/* @brief: Register List */
+#define PWRON_REG			0x00
+#define PWROFF_REG			0x01
+
+#define CNTRL_REG_1_ADDR		0x10
+#define CNTRL_REG_2_ADDR		0x11
+#define CNTRL_REG_3_ADDR		0x12
 
 #define BUCK_2_CNTL_REG_1_ADDR		0x2B
 #define BUCK_2_CNTL_REG_2_ADDR		0x2C
@@ -40,18 +49,18 @@
 #define LDO_15_CNTL_REG_2_ADDR		0x59
 
 /*
-BUCK voltage setting : 562.5mV + (12.5mV * DEC VALUE) MAX 2150mV
-BUCK_2 OTP 1800mV = 562.5mV + (12.5mV *  99[0x63]) default ON
-BUCK_3 OTP 1200mV = 562.5mV + (12.5mV *  51[0x33]) default OFF
-BUCK_4 OTP 1600mV = 562.5mV + (12.5mV *  83[0x53]) default OFF
-BUCK_5 OTP 0600mV = 562.5mV + (12.5mV *  03[0x03]) default OFF
-BUCK_6 OTP 2000mV = 562.5mV + (12.5mV * 115[0x73]) default ON
+ * BUCK voltage setting : 562.5mV + (12.5mV * DEC VALUE) MAX 2150mV
+ * BUCK_2 OTP 1800mV = 562.5mV + (12.5mV *  99[0x63]) default ON
+ * BUCK_3 OTP 1200mV = 562.5mV + (12.5mV *  51[0x33]) default OFF
+ * BUCK_4 OTP 1600mV = 562.5mV + (12.5mV *  83[0x53]) default OFF
+ * BUCK_5 OTP 0600mV = 562.5mV + (12.5mV *  03[0x03]) default OFF
+ * BUCK_6 OTP 2000mV = 562.5mV + (12.5mV * 115[0x73]) default ON
 */
 
 /*
-LDO voltage setting : 800mV + (50mV * DEC VALUE) MAX 3350mV
-LDO_15 OTP 2800mV = 800mV + (50mV *  40[0x28]) default ON
-*/
+ * LDO voltage setting : 800mV + (50mV * DEC VALUE) MAX 3350mV
+ * LDO_15 OTP 2800mV = 800mV + (50mV *  40[0x28]) default ON
+ */
 
 
 #define BUCK_V_1000mV			0x23
@@ -95,6 +104,9 @@ LDO_15 OTP 2800mV = 800mV + (50mV *  40[0x28]) default ON
 #define LDO_UV_ONESTEP			50000
 
 /* Function Define */
+int sm5011_read(unsigned char reg, unsigned char *data, unsigned char mask);
+int sm5011_write(unsigned char reg, unsigned char *data, unsigned char mask);
+
 int sm5011_get_buck_vol(int mvol);
 int sm5011_get_ldo_vol(int mvol);
 int sm5011_read(unsigned char reg, unsigned char *data, unsigned char mask);

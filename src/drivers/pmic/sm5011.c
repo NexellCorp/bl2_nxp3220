@@ -72,7 +72,7 @@ int sm5011_sboot_output_cntl(unsigned char addr, unsigned char cntl,
 
 	if(cntl == OUTPUT_ON) {
 		sm5011_read(addr, &rdata, SM5011_OUTPUT_CNTL_MASK);
-		if(rdata & OUTPUT_ON) {
+		if (rdata & OUTPUT_ON) {
 			rdata = OUTPUT_OFF;
 			if(!sm5011_write(addr, &rdata, SM5011_OUTPUT_CNTL_MASK))
 				return FALSE;
@@ -80,15 +80,15 @@ int sm5011_sboot_output_cntl(unsigned char addr, unsigned char cntl,
 		}
 
 		c_data = OUTPUT_ON;
-		if(!sm5011_write((addr + 1), &data, mask))
+		if (!sm5011_write((addr + 1), &data, mask))
 			return FALSE;
 
-		if(!sm5011_write(addr, &c_data, SM5011_OUTPUT_CNTL_MASK))
+		if (!sm5011_write(addr, &c_data, SM5011_OUTPUT_CNTL_MASK))
 			return FALSE;
 
 	} else {
 		c_data = OUTPUT_OFF;
-		if(!sm5011_write(addr, &c_data, SM5011_OUTPUT_CNTL_MASK))
+		if (!sm5011_write(addr, &c_data, SM5011_OUTPUT_CNTL_MASK))
 			return FALSE;
 	}
 
@@ -98,19 +98,19 @@ int sm5011_sboot_output_cntl(unsigned char addr, unsigned char cntl,
 int sm5011_output_cntl(unsigned char addr, unsigned char cntl,
 				unsigned char data, unsigned char mask)
 {
-	unsigned char c_data, rdata;
+	unsigned char c_data;
 
 	if(cntl == OUTPUT_ON) {
 		c_data = OUTPUT_ON;
-		if(!sm5011_write((addr + 1), &data, mask))
+		if (!sm5011_write((addr + 1), &data, mask))
 			return FALSE;
 
-		if(!sm5011_write(addr, &c_data, SM5011_OUTPUT_CNTL_MASK))
+		if (!sm5011_write(addr, &c_data, SM5011_OUTPUT_CNTL_MASK))
 			return FALSE;
 
 	} else {
 		c_data = OUTPUT_OFF;
-		if(!sm5011_write(addr, &c_data, SM5011_OUTPUT_CNTL_MASK))
+		if (!sm5011_write(addr, &c_data, SM5011_OUTPUT_CNTL_MASK))
 			return FALSE;
 	}
 
