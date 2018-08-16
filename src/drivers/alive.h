@@ -38,8 +38,8 @@ struct nx_alive_reg {
 	volatile unsigned int gpio_async_detect_mode_set1;			// 0x14 : Alive GPIO ASync Detect Mode Set Register1
 	volatile unsigned int gpio_high_async_detect_mode_read;			// 0x18 : Alive GPIO High ASync Detect Mode Read Register
 
-	volatile unsigned int gpio_detect_mode_rst0;				// 0x1C : Alive GPIO Detect Mode Reset Register0
-	volatile unsigned int gpio_detect_mode_set0;				// 0x20 : Alive GPIO Detect Mode Reset Register0
+	volatile unsigned int gpio_detectmode_rst0;				// 0x1C : Alive GPIO Detect Mode Reset Register0
+	volatile unsigned int gpio_detectmode_set0;				// 0x20 : Alive GPIO Detect Mode Reset Register0
 	volatile unsigned int gpio_falldetect_mode_read;			// 0x24 : Alive GPIO Falling Edge Detect Mode Read Register
 
 	volatile unsigned int gpio_detectmode_rst1;				// 0x28 : Alive GPIO Detect Mode Reset Register1
@@ -71,9 +71,9 @@ struct nx_alive_reg {
 	volatile unsigned int gpio_pad_outenb_set;				// 0x78 : Alive GPIO PAD Out Enable Set Register
 	volatile unsigned int gpio_pad_outenb_read; 				// 0x7C : Alive GPIO PAD Out Enable Read Register
 
-	volatile unsigned int gpio_pad_pullup_rst;				// 0x80 : Alive GPIO PAD Pullup Reset Register
-	volatile unsigned int gpio_pad_pullup_set;				// 0x84 : Alive GPIO PAD Pullup Set Register
-	volatile unsigned int gpio_pad_pullup_read; 				// 0x88 : Alive GPIO PAD Pullup Read Register
+	volatile unsigned int gpio_pullupenb_rst;				// 0x80 : Alive GPIO PAD Pullup Reset Register
+	volatile unsigned int gpio_pullupenb_set;				// 0x84 : Alive GPIO PAD Pullup Set Register
+	volatile unsigned int gpio_pullupenb_read; 				// 0x88 : Alive GPIO PAD Pullup Read Register
 
 	volatile unsigned int gpio_padout_rst;					// 0x8C : Alive GPIO PAD Out Reset Register
 	volatile unsigned int gpio_padout_set;					// 0x90 : Alive GPIO PAD Out Set Register
@@ -85,7 +85,7 @@ struct nx_alive_reg {
 	volatile unsigned int clear_wakeup_status;				// 0xA4
 	volatile unsigned int wake_upstatus;					// 0xA8
 
-	struct nx_alive_scratch_reg sch[8];				// 0xAC ~ 0x108 : Alive Scratch Register
+	struct nx_alive_scratch_reg sch[8];					// 0xAC ~ 0x108 : Alive Scratch Register
 
 	volatile unsigned int reserved3[2];					// 0x10C ~ 0x110: reserved3
 	volatile unsigned int vddoffcnt_value;					// 0x114 : Vdd Off Delay Value
