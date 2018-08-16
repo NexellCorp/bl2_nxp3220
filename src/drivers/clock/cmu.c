@@ -88,7 +88,6 @@ static unsigned int subdiv_get_clkrate(unsigned int index)
 
 	while(1) {
 		div *= ((mmio_read_32(&reg->div_val[subidx++]) & 0xFFFF) + 1);
-//		printf(" %s: sys: 0x%08X, sys->reg: 0x%08X, div: %d \r\n", __func__, sys, sys->reg, div);
 		if (sys->p_id == -1)
 			break;
 		sys = get_clk_priv(sys->p_id);
@@ -107,7 +106,6 @@ static unsigned int subdiv_get_clkrate(unsigned int index)
 	} else	if (get_clk_type(index) == CMU_NAME_DDR) {
 		mux += 3;
 	}
-//	printf(" %s: get_pll_freq(mux) : %d, div: %d \r\n", __func__, get_pll_freq(mux), div);
 
 	return (int)(get_pll_freq(mux) / div);
 }

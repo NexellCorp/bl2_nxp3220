@@ -12,6 +12,7 @@
  * is responsible for the modification.
  */
 #ifndef __CFG_FREQ_H__
+#define __CFG_FREQ_H__
 
 /* clock (PLLx) configuration */
 #define OSC_HZ					(24000000)

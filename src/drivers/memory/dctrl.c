@@ -239,7 +239,6 @@ static void ctrl_set_addr_map (void)
 //	int cs_addr_rshift = (row_bits + col_bits) - 2;				// ba_bits_low
 	int cs_addr_rshift = (row_bits + col_bits);				// ba_bits_low
 
-
 	int bank_addr_rshift = col_bits;
 	int bank_addr_high_rshift = 0;						//col_bits
 
@@ -298,6 +297,7 @@ static void ctrl_set_addr_map (void)
 		     (0x0 << 29) |						//ahb_high_priority
 		     (EN_AUTO_PRECH << 30) |					//en_auto_prech
 		     (0x0 << 31));						//fast_dfi_phyupd_ack
+
 	reg_write_ctrl(MEM_CONFIG_1, reg_value);
 	reg_write_ctrl(MEM_CONFIG_2, row_addr_mask);				// row_addr_mask
 

@@ -20,6 +20,7 @@
 
 void enter_self_refresh(void)
 {
+#if 0
 	union DDR3_SDRAM_MR MR;
 
 	int c_ctrl_st = 0;
@@ -72,10 +73,14 @@ void enter_self_refresh(void)
 	do {
 		c_ctrl_st = ((mmio_read_32(DPHY_BASE_ADDR + MEM_WIDTH) >> 12) & 0x7);
 	} while (c_ctrl_st != DRAM_SELF_REFRESH);
+#else
+	mmio_set_32((DCTRL_BASE_ADDR + PWR_SAVE_ECC_CONFIG), (1 << 3));
+#endif
 }
 
 void exit_self_refresh(void)
 {
+#if 0
 	union DDR3_SDRAM_MR MR;
 
 	int c_ctrl_st = 0;
@@ -125,6 +130,9 @@ void exit_self_refresh(void)
 	do {
 		c_ctrl_st = ((mmio_read_32(DPHY_BASE_ADDR + MEM_WIDTH) >> 12) & 0x7);
 	} while (c_ctrl_st != DRAM_NORMAL_OPERATION);
+#else
+	mmio_clear_32((DCTRL_BASE_ADDR + PWR_SAVE_ECC_CONFIG), (1 << 3));
+#endif
 }
 
 union DDR3_SDRAM_MR MR0, MR1, MR2, MR3;
