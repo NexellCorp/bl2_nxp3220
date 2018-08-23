@@ -31,6 +31,7 @@
   ************************************************/
 void pmic_board_init(void)
 {
+	unsigned char data = 0;
 	int mVol = 0;
 
 	mVol = mVol;
@@ -43,6 +44,15 @@ void pmic_board_init(void)
 					BUCK_C_FORCEPWM, 0xFF);
 	sm5011_sboot_output_cntl(BUCK_6_CNTL_REG_3_ADDR, OUTPUT_ON,
 					BUCK_C_FORCEPWM, 0xFF);
+	/*
+	 * @brief: Manual Reset Control Register
+	 * [3] : ENPMICOFF2ON   (0: Do not Reboot, 1)
+	 * [2] : ENnRESETOFF2ON (0: Do not toggle th nRESET pin)
+	 * [1] : KEYOPTION (0: One-Key, 1: Dual-Key)
+	 * [0] : ENMRSTB (0: Disable Manual Reset, 1: Enable the Reset Function)
+	 */
+	data = ((1 << 3) | (1 << 2) | (1 << 1) | (1 << 0));
+	sm5011_write(MRSTBCNTL, &data, 0xFF);
 
 	/* ARM Voltage (Default: 1.00)	*/
 //	mVol = sm5011_get_buck_vol(asv_get_arm_vol());

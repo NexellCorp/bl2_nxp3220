@@ -24,6 +24,7 @@
 #define CNTRL_REG_1_ADDR		0x10
 #define CNTRL_REG_2_ADDR		0x11
 #define CNTRL_REG_3_ADDR		0x12
+#define MRSTBCNTL			0x13
 
 #define BUCK_2_CNTL_REG_1_ADDR		0x2B
 #define BUCK_2_CNTL_REG_2_ADDR		0x2C
