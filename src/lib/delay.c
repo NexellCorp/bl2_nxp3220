@@ -30,3 +30,11 @@ void mdelay(volatile unsigned int ms)
 {
 	udelay(ms * 1000);
 }
+
+void ldelay(volatile unsigned int delay)
+{
+	volatile unsigned int i, j;
+
+	for (i = 0; i < 1000; i++)
+		for (j = 0; j < delay *10; j++);
+}

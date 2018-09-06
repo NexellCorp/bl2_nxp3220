@@ -41,7 +41,7 @@ FFFF0000	// 0x00C	Launch Address for bootloader
 000F0F0F	// 0x08C	[23:16] dq_dqs_drive, [15:8] clk_drive, [7:0] adctrl_drive 240ohm / (n * 2), n = (1 ~ 7)
 00000000	// 0x090
 // DDR3 Training & Calibration
-00000002	// 0x094	[1]: Manaul Bit-Leveling, [0]: Auto Bit-Leveling
+00000007	// 0x094	[2]: Write Leveling, [1]: Manaul Bit-Leveling, [0]: Auto Bit-Leveling
 // Rerserved
 00000000	// 0x098
 00000000	// 0x09C

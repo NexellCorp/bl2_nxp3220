@@ -28,7 +28,7 @@ void exit_self_refresh(void)
 	// todo
 }
 
-int mem_init_seq_ddr4 (unsigned int is_resume)
+int mem_init_seq_ddr4 (int is_resume)
 {
 	union DDR4_SDRAM_MR MR0, MR1, MR2, MR3;
 	union DDR4_SDRAM_MR MR4, MR5, MR6;
@@ -214,7 +214,7 @@ int mem_init_seq_ddr4 (unsigned int is_resume)
  *		-> Write-Leveling.
  *		-> Bit-Leveling.
  *************************************************************/
- int ddr4_initialize (unsigned int is_resume)
+ int ddr4_initialize (int is_resume)
 {
 	/* step xx. set the dphy */
 	phy_set_init_values();

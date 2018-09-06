@@ -229,34 +229,39 @@ union host_cmd {
 				 (0xFF << 13) |	(0x00 << 12) | (0x01 << 11) | (0x01 << 10) |	\
 				 (0x01 <<  9) | (0xFF <<  1) | (0x00 <<  0))
 
-// No Operation
+/* No Operation */
 #define CMD_IDLE_NOP		((0x00 << 24) | (0x01 << 23) | (0x01 << 22) |(0x01 << 21)|	\
 				 (0xFF << 13) |	(0x01 << 12) | (0x01 << 11) | (0x01 << 10) |	\
 				 (0x01 <<  9) | (0xFF <<  1) | (0x01 <<  0))
 
-// Mode Register
+/* Mode Register */
 #define CMD_LOAD_MODE		((0x00 << 24) | (0x01 << 23) | (0x01 << 22) | (0x01 << 21) |	\
 				 (0xFF << 13) |	(0x01 << 12) | (0x00 << 11) | (0x00 << 10) |	\
 				 (0x00 <<  9) | (0x00 <<  1) | (0x01 <<  0))
-// ZQ Calibration
+/* ZQ Calibration */
 #define CMD_ZQ_CAL		((0x00 << 24) | (0x01 << 23) | (0x01 << 22) | (0x01 << 21) |	\
 				 (0xFF << 13) |	(0x01 << 12) | (0x00 << 11) | (0x01 << 10) |	\
 				 (0x01 <<  9) | (0x00 <<  1) | (0x01 <<  0))
-// Refresh (REF)
+/* Refresh (REF) */
 #define CMD_REF			((0x00 << 24) | (0x01 << 23) | (0x01 << 22) | (0x01 << 21) |	\
 				 (0xFF << 13) |	(0x01 << 12) | (0x01 << 11) | (0x00 << 10) |	\
 				 (0x00 <<  9) | (0x00 <<  1) | (0x01 <<  0))
 
-// Self Refresh Entry (SRE)
-#define CMD_SELF_REFE		((0x00 << 24) | (0x01 << 23) | (0x01 << 22) | (0x01 << 21) |	\
+/* Self Refresh Entry (SRE) */
+#define CMD_SELF_REFE		((0x00 << 24) | (0x01 << 23) | (0x00 << 22) | (0x00 << 21) |	\
 				 (0xFF << 13) |	(0x00 << 12) | (0x01 << 11) | (0x00 << 10) |	\
-				 (0x00 <<  9) | (0x00 <<  1) | (0x01 <<  0))
-// Self Refresh Exit (SRX)
+				 (0x00 <<  9) | (0x00 <<  1) | (0x00 <<  0))
+/* Continue in Self Refresh */
+#define CMD_SELF_REF_CONT	((0x00 << 24) | (0x01 << 23) | (0x00 << 22) | (0x00 << 21) |	\
+				 (0xFF << 13) | (0x00 << 12) | (0x01 << 11) | (0x00 << 10) |	\
+				 (0x00 <<  9) | (0xFF <<  1) | (0x00 <<  0))
+
+/* Self Refresh Exit (SRX) */
 #define CMD_SELF_REFX		((0x00 << 24) | (0x01 << 23) | (0x01 << 22) | (0x01 << 21) |	\
 				 (0xFF << 13) | (0x01 << 12) | (0x01 << 11) | (0x01 << 10) |	\
 				 (0x01 <<  9) | (0xFF <<  1) | (0x00 <<  0))
 
-// Precharge All Banks (PREA)
+/* Precharge All Banks (PREA) */
 #define CMD_PRE_ALL		((0x00 << 24) | (0x00 << 23) | (0x01 << 22) | (0x00 << 21) |	\
 				 (0xFF << 13) | (0x01 << 12) | (0x00 << 11) | (0x01 << 10) |	\
 				 (0x00 <<  9) | (0x00 <<  1) | (0x01 <<  0))
@@ -264,6 +269,10 @@ union host_cmd {
 #endif
 
 /* Function Define */
+void reg_write_ctrl(int addr, int reg_value);
+void reg_set_ctrl(int addr, int reg_value);
+ int reg_read_ctrl(int addr);
+void reg_clear_ctrl(int addr, int reg_value);
 
 void host_cmd_load_mr(unsigned int offset, unsigned char mr_num,
 					unsigned short mr_value, unsigned int wait_cycle);

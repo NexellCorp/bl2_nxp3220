@@ -111,6 +111,11 @@
 // register - PHY_DLL_RECALIB
 
 /* Function Define */
+void reg_write_phy(int addr, int reg_value);
+void reg_set_phy(int addr, int reg_value);
+ int reg_read_phy(int addr);
+void reg_clear_phy(int addr, int reg_value);
+
 void phy_set_init_values(void);
 
  int hw_write_leveling(void);

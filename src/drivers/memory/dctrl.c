@@ -152,7 +152,7 @@
 
 #endif // #if (USE_NSIH_HEADER == 0)
 
-static void reg_write_ctrl(int addr, int reg_value)
+void reg_write_ctrl(int addr, int reg_value)
 {
 #if defined(DDR_DBG_ON)
 	printf("[ctrl-write] addr: 0x%08X, reg: 0x%08X \r\n", (DCTRL_BASE_ADDR + addr), reg_value);
@@ -160,7 +160,7 @@ static void reg_write_ctrl(int addr, int reg_value)
 	mmio_write_32((void*)(DCTRL_BASE_ADDR + addr), reg_value);
 }
 
-static void reg_set_ctrl(int addr, int reg_value)
+void reg_set_ctrl(int addr, int reg_value)
 {
 #if defined(DDR_DBG_ON)
 	printf("[ctrl-set] addr: 0x%08X, reg: 0x%08X \r\n", (DCTRL_BASE_ADDR + addr), reg_value);
@@ -168,7 +168,7 @@ static void reg_set_ctrl(int addr, int reg_value)
 	mmio_set_32((void*)(DCTRL_BASE_ADDR + addr), reg_value);
 }
 
-static int reg_read_ctrl(int addr)
+int reg_read_ctrl(int addr)
 {
 	int reg_value;
 	reg_value = mmio_read_32((void*)(DCTRL_BASE_ADDR + addr));
@@ -177,6 +177,16 @@ static int reg_read_ctrl(int addr)
 #endif
 	return reg_value;
 }
+
+void reg_clear_ctrl(int addr, int reg_value)
+{
+	mmio_clear_32((void*)(DCTRL_BASE_ADDR + addr), reg_value);
+#if defined(DDR_DBG_ON)
+	printf("[ctrl-clear] addr: 0x%08X, reg: 0x%08X \r\n", (DCTRL_BASE_ADDR + addr),
+		mmio_read_32(DCTRL_BASE_ADDR + addr));
+#endif
+}
+
 
 
 // wait_cycle <-- wait_ps(tMOD)/ctrl_clk_period
@@ -343,6 +353,7 @@ void ctrl_set_init_values(void)
 		     (0x0 <<  1) |						//half_wide_mode
 		     (NATIVE_BURST8	<<  2) |				//native_burst8
 		     (HALF_RATE_MODE	<<  3) |				//half_rate
+		     (0x1 <<  4) |						// dfi_reset_n
 		     (TWO_T_TIMING	<<  6) |				//onecmd_perclk_halfrate
 #if defined(LPDDR2) || defined(LPDDR3)
 		     (0x1  <<  7) |						//lpddr2 or lpddr3
@@ -626,7 +637,7 @@ void ctrl_set_init_values(void)
 
 #if defined(DDR3)
 	int sref_exit;
-	sref_exit = ac_timing->tZQoper;						//tZQoper is in ns for DDR3
+	sref_exit = ((512/2) - 1);						//tZQoper is in ns for DDR3
 	reg_value = (((ac_timing->tCKESR - 1)	<<  0) |			//self_ref_min_dly
 		     ((sref_exit & 0xFF)	<<  8) |			//self_ref_exit_dly[7:0]
 		     ((ac_timing->tCKE - 1)	<< 16) |			//pwr_dn_min_dly
@@ -644,11 +655,12 @@ void ctrl_set_init_values(void)
 		     ((ac_timing->tXP  - 1)	<< 20) |			//pwr_dn_exit_dly
 		     (((wr2prech >> 4) & 0x1)	<< 26) |			//wr2prech_dly[4]
 		     (((wr2rd >> 4) & 0x1)	<< 27) |			//wr2rd_dly[4]
-		     (((wr2rd_csc >> 4) & 0x1) << 28) |				//wr2rd_csc_dly[4]
-		     (((sref_exit >> 8) & 0x1) << 30));				//self_ref_exit_dly[8]
+		     (((wr2rd_csc >> 4) & 0x1)  << 28) |			//wr2rd_csc_dly[4]
+		     (((sref_exit >> 8) & 0x1)  << 30));			//self_ref_exit_dly[8]
 #endif
 
 #endif
+
 	reg_write_ctrl(DLY_CONFIG_2, reg_value);
 
 #if defined(DDR4)

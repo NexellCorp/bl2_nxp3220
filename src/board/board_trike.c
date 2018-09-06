@@ -70,11 +70,11 @@ void pmic_board_init(void)
 					BUCK_V_1000mV, 0xFF);
 
 	/* DDR I/O Voltage (Default: 1.5V) */
-	sm5011_sboot_output_cntl(BUCK_3_CNTL_REG_1_ADDR, OUTPUT_ON,
+	sm5011_output_cntl(BUCK_3_CNTL_REG_1_ADDR, OUTPUT_ON,
 					BUCK_V_1350mV, 0xFF);
 
 	/* DDR Device Voltage (Default: 1.5V) */
-	sm5011_sboot_output_cntl(BUCK_6_CNTL_REG_1_ADDR, OUTPUT_ON,
+	sm5011_output_cntl(BUCK_6_CNTL_REG_1_ADDR, OUTPUT_ON,
 					BUCK_V_1350mV, 0xFF);
 	/* DDRC PLL Voltage (Default: 1.8V) */
 	mVol = sm5011_get_ldo_vol(1800);
@@ -99,22 +99,3 @@ void pmic_poweroff(void)
 
 	I2C_DEINIT();
 }
-
-void pmic_suspend(void)
-{
-	unsigned char data;
-
-	I2C_INIT(SM5011_I2C_GPIO_GRP, SM5011_I2C_SCL, SM5011_I2C_SDA,
-			SM5011_I2C_SCL_ALT, SM5011_I2C_SDA_ALT);
-	/* CNTRL2 - ENnPWRSTM (0: Disable, 1:Enable) */
-	data = (0x3 << 5) | (1 << 3) | (1 << 0);
-	sm5011_write(0x11, &data, 0xFF);
-
-	/* BUCKxCNTRL1 - BUCKxONOFF */
-	data = (1 << 0);
-	sm5011_write(BUCK_2_CNTL_REG_1_ADDR, &data, 0xFF);
-	sm5011_write(BUCK_5_CNTL_REG_1_ADDR, &data, 0xFF);
-
-	I2C_DEINIT();
-}
-

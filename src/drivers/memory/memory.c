@@ -12,12 +12,15 @@
  * is responsible for the modification.
  */
 #include <sysheader.h>
+#include <dphy.h>
+#include <dctrl.h>
 #if defined(DDR3)
 #include <ddr3_sdram.h>
 #elif defined(DDR4)
 #include <ddr4_sdram.h>
 #endif
 #include <memory.h>
+#include <memtester.h>
 
 /* Extern Function */
 extern int ddr3_initialize (unsigned int is_resume);
@@ -58,9 +61,6 @@ static void get_dram_information(struct dram_device_info *me)
 #endif
 }
 
-#include <dphy.h>
-#include <dctrl.h>
-
 int memory_initialize(int is_resume)
 {
 	int ret = 0;
@@ -71,22 +71,37 @@ int memory_initialize(int is_resume)
 #elif defined(DDR4)
 	ret = ddr4_initialize(is_resume);
 #endif
-	/* @brie: "libddr.a" in manual bit-leveling */
-	if ((g_nsih->cal_mode >> 1) & 0x1)
-		trimtest(0x40000000,
-				(0 << 0) |					/* Bit Cal state	*/
-				(0 << 1) |					/* Center, Margin value */
-				(0 << 2) |					/* Lock Value		*/
-				(1 << 3) |					/* Read Cal enable	*/
-				(1 << 4));					/* Write Cal enable	*/
 
 	NOTICE("Memory Initialize %s! (%d:%d) \r\n\n",
 			(ret >= 0) ? "Done" : "Failed", ret, is_resume);
+
+	/* @brief: auto write-leveling  */
+	if ((g_nsih->cal_mode >> 2) & 0x1)
+		hw_write_leveling();
+
+	/* @brief: auto bit-leveling */
+	if ((g_nsih->cal_mode >> 0) & 0x1)
+		hw_bit_leveling();
+
+	/* @brief: "libddr.a" in manual bit-leveling */
+	if ((g_nsih->cal_mode >> 1) & 0x1) {
+		trimtest(0x40000000,
+				(1 << 0) |					/* Bit Cal state	*/
+				(1 << 1) |					/* Center, Margin value */
+				(1 << 2) |					/* Lock Value		*/
+				(1 << 3) |					/* Read Cal enable	*/
+				(1 << 4));					/* Write Cal enable	*/
+	}
 
 	if (ret >= 0)
 		return -1;
 
 	get_dram_information(&g_ddr_info);
 
+#if defined(SIMPLE_MEMTEST)
+	simple_memtest();
+#elif defined(STANDARD_MEMTEST)
+	standard_memtester();
+#endif
 	return ret;
 }

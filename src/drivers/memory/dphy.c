@@ -76,8 +76,7 @@
 
 static volatile unsigned int m_flag = 0;
 
-
-static void reg_write_phy(int addr, int reg_value)
+void reg_write_phy(int addr, int reg_value)
 {
 	mmio_write_32((void*)(DPHY_BASE_ADDR + addr), reg_value);
 
@@ -86,7 +85,7 @@ static void reg_write_phy(int addr, int reg_value)
 #endif
 }
 
-static void reg_set_phy(int addr, int reg_value)
+void reg_set_phy(int addr, int reg_value)
 {
 	mmio_set_32((void*)(DPHY_BASE_ADDR + addr), reg_value);
 
@@ -95,7 +94,7 @@ static void reg_set_phy(int addr, int reg_value)
 #endif
 }
 
-static int reg_read_phy(int addr)
+int reg_read_phy(int addr)
 {
 	int reg_value;
 	reg_value = mmio_read_32((void*)(DPHY_BASE_ADDR + addr));
@@ -103,6 +102,15 @@ static int reg_read_phy(int addr)
 	printf("[phy-read] addr: 0x%08X, reg: 0x%08X \r\n", (DPHY_BASE_ADDR + addr), reg_value);
 #endif
 	return reg_value;
+}
+
+void reg_clear_phy(int addr, int reg_value)
+{
+	mmio_clear_32((void*)(DPHY_BASE_ADDR + addr), reg_value);
+#if defined(DDR_DBG_ON)
+	printf("[phy-clear] addr: 0x%08X, reg: 0x%08X \r\n", (DPHY_BASE_ADDR + addr),
+		mmio_read_32(DPHY_BASE_ADDR+ addr));
+#endif
 }
 
 static int get_period_ps(void)
