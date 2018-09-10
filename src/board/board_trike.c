@@ -51,7 +51,7 @@ void pmic_board_init(void)
 	 * [1] : KEYOPTION (0: One-Key, 1: Dual-Key)
 	 * [0] : ENMRSTB (0: Disable Manual Reset, 1: Enable the Reset Function)
 	 */
-	data = ((1 << 3) | (1 << 2) | (1 << 1) | (1 << 0));
+	data = ((1 << 3) | (1 << 0));
 	sm5011_write(MRSTBCNTL, &data, 0xFF);
 
 	/* ARM Voltage (Default: 1.00)	*/
@@ -92,10 +92,6 @@ void pmic_poweroff(void)
 	/* @breif: CNTRL2 - [4]: GLOBALSHDN Bit = 1 (Enable : Do Shutdown) */
 	data = (1 << 4);
 	sm5011_write(CNTRL_REG_2_ADDR, &data, 0xFF);
-
-	/* @breif: PWROFF_REG - [0] GLOBALSHDN Bit = 1 */
-	data = (1 << 0);
-	sm5011_write(PWROFF_REG, &data, 0xFF);
 
 	I2C_DEINIT();
 }

@@ -57,7 +57,7 @@ void pmic_board_init(void)
 	 * [1] : KEYOPTION (0: One-Key, 1: Dual-Key)
 	 * [0] : ENMRSTB (0: Disable Manual Reset, 1: Enable the Reset Function)
 	 */
-	data = ((1 << 3) | (1 << 2) | (1 << 1) | (1 << 0));
+	data = ((1 << 3) | (1 << 0));
 	sm5011_write(MRSTBCNTL, &data, 0xFF);
 
 	/* ARM Voltage (Default: 1.00)	*/

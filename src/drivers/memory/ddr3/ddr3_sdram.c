@@ -52,7 +52,7 @@ void self_refresh_entry(void)
 		     (2  << 12) |						/* self_ref_dly set to smallest allowed value to ensure | quick entry into self refresh */
 		     (2  <<  4) |						/* pwr_dn_dly set to a small value 	*/
 		     (1  <<  3) |						/* en_auto_self_ref	*/
-		     (1  <<  2) |						/* en_auto_pwr_dn	*/
+		     (0  <<  2) |						/* en_auto_pwr_dn	*/
 #if defined(DDR3)
 		     (0  <<  1) |						/* en_correct_en	*/
 		     (0	 <<  0));						/* ecc_en		*/
@@ -77,11 +77,9 @@ void self_refresh_entry(void)
 	 * Wait enough time to ensure turn_off_addrctrl_drivers is asserted
 	 * after entering self refresh
 	 */
-	unsigned int index = 30;
-	do {
-		reg_value = reg_read_ctrl(DLY_CONFIG_2);
-		ldelay(10);
-	} while(index--);
+	unsigned int index = 10;
+	index = ((reg_read_ctrl(DLY_CONFIG_2) & 0xFF) + index);
+	ldelay(index * 10);
 
 	/* 'receiver_en' bit in 'PHY_PAD_CTRL' set 0 */
 	reg_clear_phy(PHY_PAD_CTRL, (1 << 28));
@@ -205,7 +203,6 @@ void mem_init_seq_ddr3 (int is_resume)
 	int reg_value;
 
 	if (is_resume != true) {
-//	{
 		reg_write_ctrl(MEM_START, 0x1);					// Kick off controller initialization state m/c
 
 		/* Step 01. Power ON. Assert RESET# and ensure CKE is LOW at least max of 10ns or 5tCK */
@@ -416,8 +413,8 @@ int  ddr3_initialize (int is_resume)
 
 	phy_set_init_values();
 
-//	if (is_resume == true)
-//		t_corner_override(TRUE);
+	if (is_resume == true)
+		t_corner_override(TRUE);
 
 	ctrl_set_init_values();
 
@@ -433,7 +430,7 @@ int  ddr3_initialize (int is_resume)
 		/* At resume, set 'PAD_RETEN_N' = 1 at this stage. */
 		vddpwron_ddr_on();
 
-//		t_corner_override(FALSE);
+		t_corner_override(FALSE);
 	}
 
 	mem_init_seq_ddr3(is_resume);
