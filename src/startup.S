@@ -53,3 +53,4 @@ set_stack:
 	bl	armv7_pmu_init
 
 	bl	main
+	b	.
