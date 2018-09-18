@@ -38,13 +38,13 @@ unsigned int check_suspend_state(void)
 	reg_value = mmio_read_32(&g_vddpwr_reg->new_scratch[0]);
 
 	if (reg_value != NX_SUSPEND_SIGNATURE)
-		return false;
+		return FALSE;
 
-	return true;
+	return TRUE;
 }
 
 #define VDDPWRON_DDR_GPIO_NUM				11
-#define DPHY_PAD_CTRL				(0x23091000 + 0x120)
+#define DPHY_PAD_CTRL					(0x23091000 + 0x120)
 
 void vddpwron_ddr_on(void)
 {
@@ -67,7 +67,7 @@ void vddpwron_ddr_on(void)
 void main(void)
 {
 	int serial_ch = g_nsih->serial_ch;
-	int is_resume;
+	unsigned int is_resume;
 
 	is_resume = check_suspend_state();
 

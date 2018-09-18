@@ -19,7 +19,7 @@ extern void enter_self_refresh(void);
 extern void exit_self_refresh(void);
 
 /* Function Define */
- int memory_initialize(int is_resume);
+ int memory_initialize(unsigned int is_resume);
 
 /* "libddr.a" in function */
 void trimtest(unsigned int testtargetaddr, unsigned int option);

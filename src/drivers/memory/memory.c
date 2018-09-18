@@ -61,7 +61,7 @@ static void get_dram_information(struct dram_device_info *me)
 #endif
 }
 
-int memory_initialize(int is_resume)
+int memory_initialize(unsigned int is_resume)
 {
 	int ret = 0;
 

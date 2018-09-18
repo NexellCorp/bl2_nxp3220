@@ -190,7 +190,7 @@ void exit_self_refresh(void)
 
 union DDR3_SDRAM_MR MR0, MR1, MR2, MR3;
 
-void mem_init_seq_ddr3 (int is_resume)
+void mem_init_seq_ddr3 (unsigned int is_resume)
 {
 	int mr0_cl, mr0_wr;
 
@@ -202,7 +202,7 @@ void mem_init_seq_ddr3 (int is_resume)
 
 	int reg_value;
 
-	if (is_resume != true) {
+	if (is_resume != TRUE) {
 		reg_write_ctrl(MEM_START, 0x1);					// Kick off controller initialization state m/c
 
 		/* Step 01. Power ON. Assert RESET# and ensure CKE is LOW at least max of 10ns or 5tCK */
@@ -394,11 +394,11 @@ void t_corner_override(unsigned int override)
  *		-> Write-Leveling.
  *		-> Bit-Leveling.
  *************************************************************/
-int  ddr3_initialize (int is_resume)
+int  ddr3_initialize (unsigned int is_resume)
 {
 	int ret = 0;
 
-	if (is_resume != true) {
+	if (is_resume != TRUE) {
 		/* At cold-boot, set 'PAD_RETEN_N' = 1 at this stage. */
 		vddpwron_ddr_on();
 	} else {
@@ -413,12 +413,12 @@ int  ddr3_initialize (int is_resume)
 
 	phy_set_init_values();
 
-	if (is_resume == true)
+	if (is_resume == TRUE)
 		t_corner_override(TRUE);
 
 	ctrl_set_init_values();
 
-	if (is_resume == true) {
+	if (is_resume == TRUE) {
 		/* 'start_mem_init' = 1, 'mem_init_done' = 1 */
 		reg_write_ctrl(MEM_START, 0x3);
 		/*
