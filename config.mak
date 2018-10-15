@@ -8,6 +8,7 @@ CFLAGS				:=
 DEBUG				?= n
 
 # chip name
+#CHIPNAME			?= artik310s
 CHIPNAME			?= nxp3220
 
 # (ddr3/lpddr3) memory type
@@ -17,8 +18,14 @@ MEMTYPE				?= ddr3
 #MEMTYPE				?= lpddr3
 MEMTEST				?= n
 
+# board name
 BOARD				?= vtk
 #BOARD				?= trike
+
+# pmic name
+#PMIC				?= sm5011
+PMIC				?= nxe1500
+#PMIC				?= nxe2000
 
 # system log Message
 SYSLOG				?= y

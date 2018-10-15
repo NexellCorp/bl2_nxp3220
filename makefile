@@ -12,14 +12,19 @@ LDFLAGS		=	-Bstatic							\
 
 
 SYS_OBJS	+=	startup.o libnx.o libarmv7.o libplat.o armv7_pmu.o delay.o pll.o cmu.o clock.o serial.o printf.o	\
-			dctrl.o dphy.o ${MEMTYPE}_sdram.o efuse.o memory.o pmu.o gpio.o i2c_gpio.o asv.o pmic.o sm5011.o 	\
-			board_${BOARD}.o smc_entry.o tz.o plat_load.o build_info.o main.o
+			dctrl.o dphy.o ${MEMTYPE}_sdram.o efuse.o memory.o pmu.o gpio.o i2c_gpio.o asv.o pmic.o	board_${BOARD}.o\
+			smc_entry.o tz.o plat_load.o build_info.o main.o
 
 
 ifeq ($(MEMTEST), y)
 SYS_OBJS	+=	memtester.o
 endif
 
+ifeq ($(CHIPNAME), artik310s)
+SYS_OBJS	+=	sm5011.o
+else
+SYS_OBJS	+=	${PMIC}.o
+endif
 
 SYS_OBJS_LIST	+=	$(addprefix $(DIR_OBJOUTPUT)/,$(SYS_OBJS))
 
