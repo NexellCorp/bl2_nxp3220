@@ -24,9 +24,9 @@
 
 #include <bootheader.h>
 
-#ifdef CHIPID_NXP3220
+#if defined(CHIPID_NXP3220) || defined(CHIPID_ARTIK310S)
 #include <nxp3220.h>
-#include <sip_s31nx_io_mux.h>
+#include <nxp3220_io_mux.h>
 #endif
 
 #ifdef SET_GLOBAL_VARIABLES
