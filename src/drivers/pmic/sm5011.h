@@ -84,8 +84,6 @@
 
 #define LDO_V_2800mV			0x28
 
-#define BUCK_C_FORCEPWM			0x03
-
 #define OUTPUT_ON			3
 #define OUTPUT_OFF			0
 #if 0
@@ -93,9 +91,9 @@
 #define SM5011_BUCK_DATA_LENGTH		7
 #define SM5011_LDO_DATA_LENGTH		6
 #else
-#define SM5011_OUTPUT_CNTL_MASK		0x7
-#define SM5011_BUCK_DATA_MASK		0x7FF
-#define SM5011_LDO_DATA_MASK		0x3FF
+#define SM5011_OUTPUT_CNTL_MASK		0xFF
+#define SM5011_BUCK_DATA_MASK		0xFF
+#define SM5011_LDO_DATA_MASK		0x3F
 #endif
 
 #define BUCK_UV_DEFAULT			562500
@@ -112,8 +110,10 @@ int sm5011_get_buck_vol(int mvol);
 int sm5011_get_ldo_vol(int mvol);
 int sm5011_read(unsigned char reg, unsigned char *data, unsigned char mask);
 int sm5011_write(unsigned char reg, unsigned char *data, unsigned char mask);
-int sm5011_sboot_output_cntl(unsigned char addr, unsigned char cntl,
-				unsigned char data, unsigned char mask);
-int sm5011_output_cntl(unsigned char addr, unsigned char cntl,
-				unsigned char data, unsigned char mask);
+int sm5011_buck_output_cntl(unsigned char addr, unsigned char cntl,
+				unsigned char data, unsigned char mask,
+				unsigned int reset);
+int sm5011_ldo_output_cntl(unsigned char addr, unsigned char cntl,
+				unsigned char data, unsigned char mask,
+				unsigned int reset);
 #endif	/* #ifndef __SM5011_H__ */
