@@ -1,20 +1,17 @@
 include config.mak
 
-LDFLAGS		=	-Bstatic							\
-			-Wl,-Map=$(DIR_TARGETOUTPUT)/$(TARGET_NAME).map,--cref		\
-			-T$(LDS_NAME).lds						\
-			-Wl,--start-group						\
-			-Lsrc/$(DIR_OBJOUTPUT)						\
-			-Wl,--end-group							\
-			-Wl,--build-id=none						\
-			-nostdlib							\
-			-Lsrc/lib -lddr
-
+LDFLAGS		=	-Bstatic												\
+				-Wl,-Map=$(DIR_TARGETOUTPUT)/$(TARGET_NAME).map,--cref	\
+				-T$(LDS_NAME).lds										\
+				-Wl,--start-group										\
+				-Lsrc/$(DIR_OBJOUTPUT)									\
+				-Wl,--end-group											\
+				-Wl,--build-id=none										\
+				-nostdlib
 
 SYS_OBJS	+=	startup.o libnx.o libarmv7.o libplat.o armv7_pmu.o delay.o pll.o cmu.o clock.o serial.o printf.o	\
-			dctrl.o dphy.o ${MEMTYPE}_sdram.o efuse.o memory.o pmu.o gpio.o i2c_gpio.o asv.o pmic.o	board_${BOARD}.o\
-			smc_entry.o tz.o plat_load.o build_info.o main.o
-
+				dctrl.o dphy.o ${MEMTYPE}_sdram.o memory.o libmem_rw.o sw_bit_cal.o pmu.o gpio.o i2c_gpio.o asv.o 	\
+				pmic.o board_${BOARD}.o smc_entry.o efuse.o tz.o plat_load.o build_info.o main.o
 
 ifeq ($(MEMTEST), y)
 SYS_OBJS	+=	memtester.o
@@ -28,21 +25,21 @@ endif
 
 SYS_OBJS_LIST	+=	$(addprefix $(DIR_OBJOUTPUT)/,$(SYS_OBJS))
 
-SYS_INCLUDES	+=	-I src/						\
-			-I src/lib					\
-			-I src/common					\
-			-I src/include					\
-			-I src/include/configs				\
-			-I src/drivers					\
-			-I src/drivers/clock				\
-			-I src/drivers/serial				\
-			-I src/drivers/pmic				\
-			-I src/drivers/memory				\
-			-I src/drivers/memory/ddr3			\
-			-I src/drivers/memory/ddr4			\
-			-I src/tests					\
-			-I src/board					\
-			-I src/services
+SYS_INCLUDES	+=	-I src/							\
+					-I src/lib						\
+					-I src/common					\
+					-I src/include					\
+					-I src/include/configs			\
+					-I src/drivers					\
+					-I src/drivers/clock			\
+					-I src/drivers/serial			\
+					-I src/drivers/pmic				\
+					-I src/drivers/memory			\
+					-I src/drivers/memory/ddr3		\
+					-I src/drivers/memory/ddr4		\
+					-I src/tests					\
+					-I src/board					\
+					-I src/services
 
 ###################################################################################################
 $(DIR_OBJOUTPUT)/%.o: src/%.c
