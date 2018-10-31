@@ -8,7 +8,7 @@ CFLAGS				:=
 DEBUG				?= n
 
 # chip name
-#CHIPNAME			?= artik310s
+#CHIPNAME			?= sip_s31nx
 CHIPNAME			?= nxp3220
 
 # (ddr3/lpddr3) memory type

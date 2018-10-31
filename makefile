@@ -20,7 +20,7 @@ ifeq ($(MEMTEST), y)
 SYS_OBJS	+=	memtester.o
 endif
 
-ifeq ($(CHIPNAME), artik310s)
+ifeq ($(CHIPNAME), sip_s31nx)
 SYS_OBJS	+=	sm5011.o
 else
 SYS_OBJS	+=	${PMIC}.o

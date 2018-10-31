@@ -15,7 +15,7 @@
 #include <i2c_gpio.h>
 #include <asv.h>
 
-#ifdef CHIPID_ARTIK310S
+#if defined(CHIPID_SIP_S31NX)
 #include <sm5011.h>
 
 #define SM5011_I2C_GPIO_GRP 			1
