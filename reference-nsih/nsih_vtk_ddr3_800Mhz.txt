@@ -66,6 +66,6 @@ FFFF0000	// 0x00C	Launch Address for bootloader
 00000000	// 0x0E8
 00000000	// 0x0EC
 00000011	// 0x0F0	[0:3]: BL32, [4:7]: BL33, [8:11]: SSS-F
-00000002	// 0x0F4	"Serial Channel"
+00000002	// 0x0F4	[0:3]: Serial Channel
 32200000	// 0x0F8
 4849534E	// 0x0FC	"NSIH"

@@ -41,7 +41,7 @@ FFFF0000	// 0x00C	Launch Address for bootloader
 00080808	// 0x08C	[23:16] dq_dqs_drive, [15:8] clk_drive, [7:0] adctrl_drive 240ohm / (n * 2), n = (1 ~ 7)
 00000000	// 0x090
 // DDR3 Training & Calibration
-00000002	// 0x094	[1]: Manaul Bit-Leveling, [0]: Auto Bit-Leveling
+00000007	// 0x094	[2]: Write Leveling, [1]: Manaul Bit-Leveling, [0]: Auto Bit-Leveling
 // Rerserved
 00000000	// 0x098
 00000000	// 0x09C
@@ -66,6 +66,6 @@ FFFF0000	// 0x00C	Launch Address for bootloader
 00000000	// 0x0E8
 00000000	// 0x0EC
 00000011	// 0x0F0	[0:3]: BL32, [4:7]: BL33, [8:11]: SSS-F
-00000000	// 0x0F4	Serial Channel
+00000000	// 0x0F4	[0:3]: Serial Channel
 32200000	// 0x0F8
 4849534E	// 0x0FC	"NSIH"
