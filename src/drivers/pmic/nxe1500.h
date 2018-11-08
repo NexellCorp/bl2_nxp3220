@@ -24,6 +24,8 @@
 #define NXE1500_DEF_DDC4_VOL            1500000 			/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.6V */
 #define NXE1500_DEF_DDC5_VOL            1500000				/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.6V */
 
+#define NXE1500_REG_SLPCNT		0xE
+
 #define NXE1500_REG_DC1VOL              0x36
 #define NXE1500_REG_DC2VOL              0x37
 #define NXE1500_REG_DC3VOL              0x38
