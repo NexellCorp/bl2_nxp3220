@@ -1,0 +1,71 @@
+00000000	// 0x000	Load Size for bootloader
+00000000	// 0x004	CRC32 Value
+FFFF0000	// 0x008	Load Address for bootloader
+FFFF0000	// 0x00C	Launch Address for bootloader
+0002C400	// 0x010	boot-loader 32 device address
+0022C400	// 0x014	boot-loader 33 device address
+00024400	// 0x018	SSS firmware device address
+00000000	// 0x01C
+// Clock(PLL) Registers
+00C80003	// 0x020	PLL0_PM	800MHz	P:3	M:200
+00000001	// 0x024	PLL0_SK	800MHz	S:1
+00000000	// 0x028	PLL0_SSCG
+00FA0003	// 0x02C	PLL1_PM	1000MHz	P:3	M:250
+00000001	// 0x030	PLL1_SK	1000MHz	S:1	K:0
+00000101	// 0x034	PLL1_SSCG
+00C80003	// 0x038	PLLCPU_PM	800MHz	P:3	M:200
+00000001	// 0x03C	PLLCPU_SK	800MHz	S:1
+00000000	// 0x040	PLLCPU_SSCG
+01370004	// 0x044	PLLDDR0_PM	1866MHz	P:4	M:311
+00000000	// 0x048	PLLDDR0_SK	1866MHz	S:0
+00000000	// 0x04C	PLLDDR0_SSCG
+00C80003	// 0x050	PLLDDR1_PM	800MHz	P:3	M:200
+00000001	// 0x054	PLLDDR1_SK	800MHz	S:1	K:0
+00000101	// 0x058	PLLDDR1_SSCG
+// DPHY, DCTRL Registers,
+// Memory Information Configuration
+030A0F01	// 0x05C	Chip Num:1  Chip Row:15 Chip Col:10 Bank Num:8
+00001000	// 0x060	Mem Size: (2^15) x (2^10) x (8Bank) x 4, 4 => (32bit Bus Width / 8bit) Bus Width:16
+// DDR AC Timing Configuration
+00780E37	// 0x064	tREFI:7800  tRFC:260
+003775D0	// 0x068	tRC:47.91   tRCD:13.91  tRP:13.91   tRRD:6  tRAS:34
+4740090D	// 0x06C	tWTR:7.5    tWR:15  tRTP:7.5    WL:9    RL:13
+33367006	// 0x070	tCKESR:6.07181136120043 tCKE:5  tCCD:4.3    tMRD:4.28724544480171   tMOD:15 tFAW:35
+007E0300	// 0x074	tXPR:270    tXP:6   tXS:10.7181136120043
+0000A28E	// 0x078	WR2RD_CSC:10    WR2RD:10    WR2PRECH:14
+12B25826	// 0x07C	tZQInit:640 ttZQoper:320    tZQCS:80
+0000005D	// 0x080	tRCD_DCLK:13    tCCD_DCLK:5
+// DDR3 Device - On Die Termination (ODT), Driver Strength (ODS)
+00030000	// 0x084	[23:16] mr1_rtt_nom - 001: RZQ/4, 010: RZQ/2, 011: RZQ/6, 100: RZQ/12, 101: RZQ/8, [15:0] mr1_ods - 0: RZQ/6, 1 : RZQ/7, [7:0]  mr2_rtt_wr - 0: ODT disable, 1: RZQ/4, 2: RZQ/2
+00000000	// 0x088
+010A0808	// 0x08C	[31:24] io_mode (0x1:120 ohm, 0x4:60 ohm, 0x6:40 ohm, 0x0: No ODT), {[23:16] dq_dqs_drive, [15:8] clk_drive, [7:0] adctrl_drive (0x8: 60ohm, 0xB: 40ohm, 0xE:34ohm, 0xF:30ohm)}
+00000000	// 0x090
+// DDR3 Training & Calibration
+00000007	// 0x094	[2]: Write Leveling, [1]: Manaul Bit-Leveling, [0]: Auto Bit-Leveling
+// Rerserved
+00000000	// 0x098
+00000000	// 0x09C
+00000000	// 0x0A0
+00000000	// 0x0A4
+00000000	// 0x0A8
+00000000	// 0x0AC
+00000000	// 0x0B0
+00000000	// 0x0B4
+00000000	// 0x0B8
+00000000	// 0x0BC
+00000000	// 0x0C0
+00000000	// 0x0C4
+00000000	// 0x0C8
+00000000	// 0x0CC
+00000000	// 0x0D0
+00000000	// 0x0D4
+00000000	// 0x0D8
+00000000	// 0x0DC
+00000000	// 0x0E0
+00000000	// 0x0E4
+00000000	// 0x0E8
+00000000	// 0x0EC
+00000011	// 0x0F0	[0:3]: BL32, [4:7]: BL33, [8:11]: SSS-F
+00000002	// 0x0F4	[0:3]: Serial Channel
+32200000	// 0x0F8
+4849534E	// 0x0FC	"NSIH"

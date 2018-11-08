@@ -20,6 +20,7 @@ MEMTEST				?= n
 
 # board name
 BOARD				?= vtk
+#BOARD				?= evb
 #BOARD				?= trike
 
 # pmic name
