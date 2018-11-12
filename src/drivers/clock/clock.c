@@ -53,7 +53,7 @@ int clock_initialize(void)
 
 	base = (volatile unsigned char*)(PHY_BASEADDR_CMU_DDR_MODULE);
 //	mmio_write_32((base + 0x200), 0);
-	mmio_write_32((base + 0x260), 2-1);					// DDR
+	mmio_write_32((base + 0x260), 1-1);					// DDR
 //	mmio_write_32((base + 0x400), 0);
 	mmio_write_32((base + 0x460), 3-1);//div[0][0] - 1);			// DDR AXI
 	mmio_write_32((base + 0x464), 2-1);//div[1][0] - 1);			// DDR APB
