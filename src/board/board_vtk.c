@@ -45,11 +45,12 @@ void pmic_board_init(void)
 	 * [1] : BUCKxADISEN (Active-Discharge 0: Disable, 1: Enabled)
 	 * [0] : BUCKxMODE (0: Auto-Mode, 1: Forced PWM)
 	 */
+#ifdef CONFIG_ENABLE_FPWM
 	data = ((1 << 1) | (1 << 0));
 	sm5011_write(BUCK_4_CNTL_REG_3_ADDR, &data, 0xFF);
 	sm5011_write(BUCK_3_CNTL_REG_3_ADDR, &data, 0xFF);
 	sm5011_write(BUCK_6_CNTL_REG_3_ADDR, &data, 0xFF);
-
+#endif
 	/*
 	 * @brief: Manual Reset Control Register
 	 * [3] : ENPMICOFF2ON	(0: Do not Reboot, 1)
