@@ -57,3 +57,19 @@ int nxe1500_read(char addr, char *pdata, int size)
 {
 	return i2c_gpio_read(I2C_ADDR_NXE1500, addr, pdata, size);
 }
+
+int nxe1500_dcdc_enable(char addr, int enable)
+{
+	unsigned char data = 0;
+
+	nxe1500_read(addr, &data, 1);
+
+	if (enable)
+		data |= (1 << 0);
+	else
+		data &= ~(1 << 0);
+
+	nxe1500_write(addr, &data, 1);
+
+	return data;
+}

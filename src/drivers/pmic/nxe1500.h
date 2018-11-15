@@ -20,17 +20,25 @@
 
 #define NXE1500_DEF_DDC1_VOL            1000000				/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.3V */
 #define NXE1500_DEF_DDC2_VOL            1000000				/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.1V */
-#define NXE1500_DEF_DDC3_VOL            1000000				/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 3.3V */
+#define NXE1500_DEF_DDC3_VOL            1500000				/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 3.3V */
 #define NXE1500_DEF_DDC4_VOL            1500000 			/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.6V */
-#define NXE1500_DEF_DDC5_VOL            1500000				/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.6V */
+#define NXE1500_DEF_DDC5_VOL            1000000				/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.6V */
 
 #define NXE1500_REG_SLPCNT		0xE
+
+#define NXE1500_REG_DC1CTL1		0x2C
+#define NXE1500_REG_DC1CTL1		0x2D
+#define NXE1500_REG_DC2CTL1		0x2E
+#define NXE1500_REG_DC2CTL1		0x2F
+#define NXE1500_REG_DC3CTL1		0x30
+#define NXE1500_REG_DC3CTL2		0x31
+#define NXE1500_REG_DC4CTL1		0x32
+#define NXE1500_REG_DC4CTL1		0x33
 
 #define NXE1500_REG_DC1VOL              0x36
 #define NXE1500_REG_DC2VOL              0x37
 #define NXE1500_REG_DC3VOL              0x38
 #define NXE1500_REG_DC4VOL              0x39
-#define NXE1500_REG_DC5VOL              0x3A
 
 #define NXE1500_DEF_LDOx_VOL_MIN	900000				/* UINT = 1uV, 0.9V */
 #define NXE1500_DEF_LDOx_VOL_MAX	3500000				/* UINT = 1uV, 3.5V */
