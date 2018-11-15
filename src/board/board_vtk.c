@@ -136,17 +136,17 @@ void pmic_board_init(void)
 	data = nxe1500_get_dcdc_step(NXE1500_DEF_DDC1_VOL);
 	nxe1500_write(NXE1500_REG_DC1VOL, &data, 1);
 
-	/* Core Voltage (Default: 1.0V)	*/
+	/* Core Voltage (Default: 1.0V) */
 	data = nxe1500_get_dcdc_step(NXE1500_DEF_DDC2_VOL);
 	nxe1500_write(NXE1500_REG_DC2VOL, &data, 1);
 
 	/* DDR Device Voltage (Default: 1.5V)	*/
-	data = nxe1500_get_dcdc_step(NXE1500_DEF_DDC4_VOL);
-	nxe1500_write(NXE1500_REG_DC4VOL, &data, 1);
+	data = nxe1500_get_dcdc_step(NXE1500_DEF_DDC3_VOL);
+	nxe1500_write(NXE1500_REG_DC3VOL, &data, 1);
 
 	/* DDRIO Voltage (Default: 1.5V)	*/
-	data = nxe1500_get_dcdc_step(NXE1500_DEF_DDC5_VOL);
-	nxe1500_write(NXE1500_REG_DC5VOL, &data, 1);
+	data = nxe1500_get_dcdc_step(NXE1500_DEF_DDC4_VOL);
+	nxe1500_write(NXE1500_REG_DC4VOL, &data, 1);
 
 	/* DDRPLL, Device 1.8V Voltage (Default: 1.8V)	*/
 	data = nxe1500_get_ldo_step(NXE1500_DEF_LDO2_VOL);
