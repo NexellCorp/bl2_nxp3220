@@ -38,13 +38,36 @@ void dphy_global_reset(void)
 
 void self_refresh_entry(void)
 {
+	union DDR3_SDRAM_MR MR;
 	unsigned int reg_value = 0;
 	int c_ctrl_st = 0;
+
+#if 1
+	MR.REG          = 0;
+	MR.MR2.RTT_WR   = 0; 							/* 0: disable, 1: RZQ/4 (60ohm), 2: RZQ/2 (120ohm)	*/
+	MR.MR2.SRT      = 0;							/* self refresh normal range, if (ASR == 1) SRT = 0;	*/
+	MR.MR2.ASR      = 1;							/* auto self refresh enable				*/
+	MR.MR2.CWL	= (g_nsih->dii.ac_timing.WL + 0);			/* WL + AL						*/
+	host_cmd_load_mr(HOST_CMD_1_2, SDRAM_MODE_REG_MR2,
+					MR.REG, g_nsih->dii.ac_timing.tMOD);
+
+	MR.REG          = 0;
+	MR.MR1.DLL      = 1;							/* 0: Enable, 1 : Disable	*/
+	MR.MR1.AL	= 0;
+	MR.MR1.ODS0	= ((g_nsih->dsinfo.mr1_ods >> 0) & 0x1);
+	MR.MR1.ODS1	= ((g_nsih->dsinfo.mr1_ods >> 1) & 0x1);
+	MR.MR1.RTT_Nom0	= 0;
+	MR.MR1.RTT_Nom1	= 0;
+	MR.MR1.RTT_Nom2	= 0;
+	MR.MR1.QOff     = 0;
+	MR.MR1.WL       = 0;
+	host_cmd_load_mr(HOST_CMD_1_3, SDRAM_MODE_REG_MR1,
+				MR.REG, g_nsih->dii.ac_timing.tMOD);
 
 	/* Turn OFF DSCL - Whether PHY or controller triggered */
 	reg_write_phy(DSCL_CNT, reg_value);
 	reg_write_phy(AUTO_SCL_CTRL, reg_value);
-#if 1
+
 	/* Set ref_burst_cnt to 1 to ensure quick entry into self refresh */
 	mmio_set_32((DCTRL_BASE_ADDR + REF_CONFIG), (0x1 << 28));
 
