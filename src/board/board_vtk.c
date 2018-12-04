@@ -28,8 +28,8 @@
   * XXX Board (PMIC: )  - Reference 201X.XX.XX
   * ARM		: 1.0V
   * CORE	: 1.0V
-  * DDR		: 1.35V
-  * DDR_IO	: 1.35V
+  * DDR		: 1.5V
+  * DDR_IO	: 1.5V
   ************************************************/
 void pmic_board_init(void)
 {
@@ -76,13 +76,13 @@ void pmic_board_init(void)
 	sm5011_buck_output_cntl(BUCK_4_CNTL_REG_1_ADDR, OUTPUT_ON,
 					BUCK_V_1000mV, SM5011_BUCK_DATA_MASK, FALSE);
 
-	/* DDR I/O Voltage (Default: 1.35V) */
+	/* DDR I/O Voltage (Default: 1.5V) */
 	sm5011_buck_output_cntl(BUCK_3_CNTL_REG_1_ADDR, OUTPUT_ON,
-					BUCK_V_1350mV, SM5011_BUCK_DATA_MASK, FALSE);
+					BUCK_V_1500mV, SM5011_BUCK_DATA_MASK, FALSE);
 
-	/* DDR Device Voltage (Default: 1.35V) */
+	/* DDR Device Voltage (Default: 1.5V) */
 	sm5011_buck_output_cntl(BUCK_6_CNTL_REG_1_ADDR, OUTPUT_ON,
-					BUCK_V_1350mV, SM5011_BUCK_DATA_MASK, FALSE);
+					BUCK_V_1500mV, SM5011_BUCK_DATA_MASK, FALSE);
 
 	/* DDRC PLL Voltage (Default: 1.8V) */
 	mVol = sm5011_get_ldo_vol(1800);
