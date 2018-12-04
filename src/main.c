@@ -54,9 +54,7 @@ void vddpwron_ddr_on(void)
 	mmio_set_32(&g_alive_reg->gpio_pad_outenb_rst, reg_value);
 	mmio_set_32(&g_alive_reg->gpio_inputenb_rst, reg_value);
 
-	mmio_set_32(&g_alive_reg->gpio_padout_rst, reg_value);			/* outpad - low  */
-	mmio_set_32(&g_alive_reg->gpio_padout_set, reg_value);			/* outpad - high */
-	mmio_set_32(&g_alive_reg->gpio_pad_outenb_set, reg_value);		/* output enable */
+	mmio_set_32(&g_alive_reg->gpio_inputenb_set, reg_value);
 
 	do {
 		reg_value = mmio_read_32(DPHY_PAD_CTRL);
