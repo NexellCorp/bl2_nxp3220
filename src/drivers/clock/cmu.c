@@ -61,7 +61,6 @@ static int get_clktop_base(void)
 static int src_get_clkrate(unsigned int index)
 {
 	struct nx_clk_priv *sys = get_clk_priv(index);
-
 	unsigned int mux, div = 1;
 
 	sys = get_clk_priv(index);
@@ -171,29 +170,38 @@ static long sel_optimal_calc_div(unsigned int index, int req_freq)
 	return (get_pll_freq(mux)/ s_div / y_div);
 }
 
-long get_optimal_div(unsigned int pll_freq, int req_freq,
-			unsigned int *s_div, unsigned int *y_div)
+long get_optimal_div(unsigned int cur_freq,
+			unsigned int req_freq, unsigned int *div)
 {
-	int div = 0;
+	unsigned int cal_freq;
+	unsigned int cal_div = 0;
 
-	div = (pll_freq / req_freq);
+	cal_div = (cur_freq / req_freq);
 
-	if (div > MAX_DIV) {
-		*s_div = MAX_DIV;
-		*y_div = (div - *s_div);
-	} else {
-		*s_div = div;
-		*y_div = 1;
+	if (cur_freq <= req_freq) {
+		*div = 1;
+		if (cur_freq < req_freq)
+			return false;
 	}
 
-	return 0;
+	if (cal_div > MAX_DIV) {
+		*div = MAX_DIV;
+		return false;
+	} else {
+		cal_freq = (cur_freq / cal_div);
+		if (cal_freq > req_freq)
+			cal_div += 1;
+		*div = cal_div;
+	}
+
+	return true;
 }
 
 long get_src_mux(unsigned int index)
 {
 	struct nx_clk_priv *sys = get_clk_priv(index);
 
-	return mmio_read_32(&sys->reg->grp_clk_src);
+	return (mmio_read_32(&sys->reg->grp_clk_src) & 0xF);
 }
 
 unsigned long cmu_set_rate(unsigned int index, unsigned long freq)

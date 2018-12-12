@@ -30,41 +30,79 @@ void clock_information(void)
 int clock_initialize(void)
 {
 	volatile unsigned char *base;
-	unsigned int req_pll[4], div[4][2], mux;
-	int ret = true;
+	unsigned int cur_freq[5], freq;
+	unsigned int index, div[6];
 
-	req_pll[0] = get_pre_pll_freq(3, g_nsih->clk[3].pll_pm,
-						g_nsih->clk[3].pll_sk);
-	req_pll[1] = get_pre_pll_freq(3, g_nsih->clk[3].pll_pm,
-						g_nsih->clk[3].pll_sk);
-	req_pll[2] = get_pre_pll_freq(2, g_nsih->clk[2].pll_pm,
-						g_nsih->clk[2].pll_sk);
-	mux = get_src_mux(SYS_0_AXI_CLK);
-	req_pll[3] = get_pre_pll_freq(mux, g_nsih->clk[mux].pll_pm,
-						g_nsih->clk[mux].pll_sk);
-	get_optimal_div(req_pll[0], DDR_0_AXI_CLK_MAX,
-		&div[0][0], &div[0][1]);					/* DDR.AXI_CLK.DYNAMIC_DIVIDER_VALUE	*/
-	get_optimal_div(req_pll[1], DDR_0_APB_CLK_MAX,
-		&div[1][0], &div[1][1]);					/* DDR.APB_CLK.DYNAMIC_DIVIDER_VALUE	*/
-	get_optimal_div(req_pll[2], CPU_0_AXI_CLK_MAX,
-		&div[2][0], &div[2][1]);					/* CPU.AXI.DYNAMIC_DIVIER_VALUE	*/
-	get_optimal_div(req_pll[3], SYS_0_AXI_CLK_MAX,
-		&div[3][0], &div[3][1]);					/* SYS.AXI.DYNAMIC_DIVIER_VALUE	*/
+	for (index = 0; index < 5; index++)
+		cur_freq[index] = get_pre_pll_freq(index,
+			g_nsih->clk[index].pll_pm,
+			g_nsih->clk[index].pll_sk);
+
+	/*
+	 * @brief: Do not change the DDR source clock without advice
+	 * from the memory controller developer. (Fix: PLLDDR0)
+	 */
+	index = (get_src_mux(DDR_0_DDR_CLK) + PLLDDR0);
+	get_optimal_div(cur_freq[index], DDR_0_AXI_CLK_MAX, &div[0]);
+	freq = (cur_freq[index] / div[0]);
+	get_optimal_div(freq, DDR_0_APB_CLK_MAX, &div[1]);
+	get_optimal_div(freq, DDR_0_DIV_CLK_MAX, &div[2]);
 
 	base = (volatile unsigned char*)(PHY_BASEADDR_CMU_DDR_MODULE);
-//	mmio_write_32((base + 0x200), 0);
-	mmio_write_32((base + 0x260), 1-1);					// DDR
-//	mmio_write_32((base + 0x400), 0);
-	mmio_write_32((base + 0x460), 3-1);//div[0][0] - 1);			// DDR AXI
-	mmio_write_32((base + 0x464), 2-1);//div[1][0] - 1);			// DDR APB
-//	mmio_write_32((base + 0x660), 2-1);//div[1][0] - 1);			// PLL_DDR0
+	mmio_write_32((base + 0x200), 0);					/* CLKMUX_DDR[0].DDR */
+	mmio_write_32((base + 0x260), 1-1);					/* DIVVAL_DDR[0].DDR */
+	mmio_write_32((base + 0x400), 0);					/* CLKMUX_DDR[0].AXI */
+	mmio_write_32((base + 0x460), div[0]-1);				/* DIVVAL_DDR[0].AXI */
+	mmio_write_32((base + 0x464), div[1]-1);				/* DIVVAL_DDR[0].APB */
+	mmio_write_32((base + 0x660), div[2]-1);				/* DIVVAL_PLL_DDR0_DIV[0].CLK	*/
+
+	/*
+	 * @brief: "CPU.ARM" clock and the sub clock are all used by
+	 * dividing the "CPU.ARM" clock.
+	 */
+	index = PLLCPU;
+	get_optimal_div(cur_freq[index], CPU_0_AXI_CLK_MAX, &div[0]);
+	get_optimal_div(cur_freq[index], CPU_0_AT_CLK_MAX , &div[1]);
+	get_optimal_div(cur_freq[index], CPU_0_CNT_CLK_MAX, &div[2]);
+	get_optimal_div(cur_freq[index], CPU_0_TS_CLK_MAX , &div[3]);
+	get_optimal_div(cur_freq[index], CPU_0_DBGAPB_CLK_MAX, &div[4]);
+	get_optimal_div(cur_freq[index], CPU_0_APB_CLK_MAX, &div[5]);
+
 	base = (volatile unsigned char*)(PHY_BASEADDR_CMU_CPU_MODULE);
-//	mmio_write_32((base + 0x260), 0x4-1); //div[2][0]);			// CPU AXI
+	/* CLKMUX_CPU[0].ARM (0: PLLCPU, 1:CPU_BACKUP_0_CLK) */
+	mmio_write_32((base + 0x200), 0);
+	mmio_write_32((base + 0x260), 1-1);					/* DIVVAL_CPU[0].ARM	*/
+	mmio_write_32((base + 0x264), div[0]-1);				/* DIVVAL_CPU[0].AXI	*/
+	mmio_write_32((base + 0x268), div[1]-1);				/* DIVVAL_CPU[0].ATCLK	*/
+	mmio_write_32((base + 0x26C), div[2]-1);				/* DIVVAL_CPU[0].CNTCLK	*/
+	mmio_write_32((base + 0x270), div[3]-1);				/* DIVVAL_CPU[0].TSCLK	*/
+	mmio_write_32((base + 0x274), div[4]-1);				/* DIVVAL_CPU[0].DBGAPB	*/
+	mmio_write_32((base + 0x278), div[5]-1);				/* DIVVAL_CPU[0].APB	*/
+
+	/*
+	 * @brief: If you want to change this clock, SRC_CLK, SYS_CLK has a
+	 * complex structure, please refer to the datasheet.
+	 */
+	/*
+	 * @brief: In fact, since PLL0/1 is not changed, the current
+	 * clock is fetched
+	 */
+	index = get_src_mux(SRC_SYS_0_AXI_CLK);
+	cur_freq[index] = cmu_get_rate(index);
+	get_optimal_div(cur_freq[index], SRC_SYS_0_AXI_CLK_MAX, &div[0]);
+	freq = (cur_freq[index] / div[0]);
+	get_optimal_div(freq , SYS_0_AXI_CLK_MAX, &div[1]);
+	freq = (freq / div[1]);
+	get_optimal_div(freq, SYS_0_APB_CLK_MAX, &div[2]);
+
+	base = (volatile unsigned char*)(PHY_BASEADDR_CMU_SRC_MODULE);
+	mmio_write_32((base + 0x200), div[0]-1);				/* DIVVAL_SRC_SYS[0].AXI*/
 	base = (volatile unsigned char*)(PHY_BASEADDR_CMU_SYS_MODULE);
-//	mmio_write_32((base + 0x260), 0x2-1); //div[3][0]);			// SYS AXI
+	mmio_write_32((base + 0x260), div[1]-1);				/* DIVVAL_SYS[0].AXI	*/
+	mmio_write_32((base + 0x264), div[2]-1);				/* DIVVAL_SYS[0].APB	*/
 
 	if (true != pll_initialize())
 		return false;
 
-	return ret;
+	return true;
 }

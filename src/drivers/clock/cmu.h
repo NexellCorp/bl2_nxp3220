@@ -335,9 +335,9 @@ struct nx_clk_priv {
 };
 
 /* Define Function */
-long get_optimal_div(unsigned int index, int req_freq,
-			unsigned int *s_div, unsigned int *y_div);
- long get_src_mux(unsigned int index);
+long get_optimal_div(unsigned int cur_freq,
+			unsigned int req_freq, unsigned int *div);
+long get_src_mux(unsigned int index);
 
  int cmu_clk_enable (int index, int enable);
 void cmu_clk_divstop(int index, unsigned int enable);

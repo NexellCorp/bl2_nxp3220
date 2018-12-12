@@ -14,10 +14,23 @@
 #ifndef __CLOCK_H__
 #define __CLOCK_H__
 
+/* cpu-specific maximum clock frequency value.*/
 #define CPU_0_AXI_CLK_MAX				(400 * 1000 * 1000)
-#define SYS_0_AXI_CLK_MAX				(100 * 1000 * 1000)
-#define DDR_0_AXI_CLK_MAX				(200 * 1000 * 1000)
-#define DDR_0_APB_CLK_MAX				(100 * 1000 * 1000)
+#define CPU_0_APB_CLK_MAX				(100 * 1000 * 1000)
+#define CPU_0_AT_CLK_MAX				(200 * 1000 * 1000)
+#define CPU_0_CNT_CLK_MAX				(200 * 1000 * 1000)
+#define CPU_0_TS_CLK_MAX				(200 * 1000 * 1000)
+#define CPU_0_DBGAPB_CLK_MAX				(100 * 1000 * 1000)
+
+/* bus-specific maximum clock frequency value. */
+#define SRC_SYS_0_AXI_CLK_MAX				(1000 * 1000 * 1000)
+#define SYS_0_AXI_CLK_MAX				(333 * 1000 * 1000)
+#define SYS_0_APB_CLK_MAX				(166 * 1000 * 1000)
+
+/* ddr-specific maximum clock frequency value. */
+#define DDR_0_AXI_CLK_MAX				(333 * 1000 * 1000)
+#define DDR_0_APB_CLK_MAX				(166 * 1000 * 1000)
+#define DDR_0_DIV_CLK_MAX				(625 * 1000 * 1000)
 
 /* Clock Function Define */
 int clock_initialize(void);
