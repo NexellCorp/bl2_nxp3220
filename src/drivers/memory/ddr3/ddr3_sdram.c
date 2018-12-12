@@ -17,6 +17,7 @@
 #include <dctrl.h>
 #include <ddr3_sdram.h>
 #include <ddr3_ac_timing.h>
+#include <delay.h>
 
 /* Extern Functions */
 extern void vddpwron_ddr_on(void);
@@ -112,7 +113,7 @@ void self_refresh_entry(void)
 void enter_self_refresh(void)
 {
 	union DDR3_SDRAM_MR MR;
-	int wait_cycle = g_nsih->dii.ac_timing.tCKESR;
+//	int wait_cycle = g_nsih->dii.ac_timing.tCKESR;
 
 	/* Step 01. Disable Controller State Machine. This also Stops Refresh Generation */
 	reg_write_ctrl(MEM_START, 0x1);

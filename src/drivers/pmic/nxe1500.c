@@ -60,7 +60,7 @@ int nxe1500_read(char addr, char *pdata, int size)
 
 int nxe1500_dcdc_enable(char addr, int enable)
 {
-	unsigned char data = 0;
+	char data = 0;
 
 	nxe1500_read(addr, &data, 1);
 

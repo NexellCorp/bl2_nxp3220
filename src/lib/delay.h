@@ -16,5 +16,6 @@
 
 void udelay(volatile unsigned int us);
 void mdelay(volatile unsigned int ms);
+void ldelay(volatile unsigned int delay);
 
 #endif // #ifndef __DELAY_H__

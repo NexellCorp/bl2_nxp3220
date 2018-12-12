@@ -236,7 +236,7 @@ void hw_bit_leveling_information(void)
 
 int hw_bit_leveling(void)
 {
-	int status, reg_value;
+	int status;
 
 	reg_write_phy(DISABLE_GATING_FOR_SCL, 0x00000000);
 
@@ -251,13 +251,13 @@ int hw_bit_leveling(void)
 
 	reg_write_phy(PHY_SCL_START_ADDR, (0x0 << 16));				// Set the address for scl start
 	reg_write_phy(SCL_START, (0x305 << 20));				// Set bit leveling normal from DRAM with write side
-	reg_value  = reg_read_phy(SCL_START);
+	reg_read_phy(SCL_START);
 
 	do {
 		status = ((reg_read_phy(SCL_START) >> 28) & 0x1);
 	} while (status);
 
-	reg_value  = reg_read_phy(DYNAMIC_WRITE_BIT_LVL);			// Todo WR_BIT_LVL fail check with reg_value
+	reg_read_phy(DYNAMIC_WRITE_BIT_LVL);					// Todo WR_BIT_LVL fail check with reg_value
 
 	reg_write_phy(DISABLE_GATING_FOR_SCL, 0x00000001);
 

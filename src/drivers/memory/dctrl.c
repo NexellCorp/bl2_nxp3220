@@ -227,10 +227,12 @@ void host_cmd_load(unsigned int offset, unsigned int cmd_high, unsigned int cmd_
 	mmio_write_32(DCTRL_BASE_ADDR + (offset + 0x40), reg_value);
 }
 
+#if 0
 static int ctrl_state_check(void)
 {
 	return ((reg_read_ctrl(MEM_WIDTH) >> 12) & 0x7);
 }
+#endif
 
 #if (USE_NSIH_HEADER == 1)
 static void ctrl_set_addr_map (void)
