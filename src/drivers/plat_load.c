@@ -25,6 +25,7 @@
 #include <sysheader.h>
 #include <libnx.h>
 #include <memory.h>
+#include <ddr3_sdram.h>
 #include <plat_load.h>
 
 #define SIP_PLATFORM_LOAD		0x82000002
@@ -35,6 +36,8 @@ extern int smc_call(unsigned int r0, unsigned int r1,
 
 extern void self_refresh_entry(void);
 extern void pmic_poweroff(void);
+
+extern struct dram_device_info g_ddr_info;
 
 int plat_load(void)
 {
@@ -48,6 +51,8 @@ int plat_load(void)
 	pi.s_dev_addr = pbm->bi.dbi.s_device_addr;
 	pi.n_dev_addr = pbm->bi.dbi.n_device_addr;
 	pi.sf_dev_addr = pbm->bi.dbi.sf_device_addr;
+	/* Convert the memory-size unit to MB.*/
+	pi.sdram_size = (g_ddr_info.sdram_size * 1024 * 1024);
 	pi.ensr_func = self_refresh_entry;
 	pi.exsr_func = exit_self_refresh;
 

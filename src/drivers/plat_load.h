@@ -32,6 +32,7 @@ struct platform_info {
 	unsigned int n_dev_addr;
 	unsigned int sf_dev_addr;
 	/* @brief: Memory Function */
+	unsigned int sdram_size;
 	void (*ensr_func)(void);
 	void (*exsr_func)(void);
 	/* suspend/power-off function */

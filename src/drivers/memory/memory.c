@@ -53,14 +53,15 @@ static void get_dram_information(struct dram_device_info *me)
 	me->bank_size	= (me->row_size * me->column_size);
 	me->chip_size	= (((me->bank_size * (1 << me->bank_num))
 				* g_nsih->dii.bus_width)/ 1024 / 1024);		// Unit: MB
-	me->sdram_size	= (me->chip_size * (g_nsih->dii.chip_num
-				* 32 / g_nsih->dii.bus_width));
+	me->sdram_size	= (me->chip_size * (16 / g_nsih->dii.bus_width));
+
 #if 0
 	SYSMSG("############## [SDRAM] Memory Specification ###############\r\n");
 	SYSMSG("[Bit] Bank Address   : %d \r\n", me->bank_num);
 	SYSMSG("[Bit] Column Address : %d \r\n", me->column_num);
 	SYSMSG("[Bit] Row Address    : %d \r\n", me->row_num);
 	SYSMSG("[Bit] Data Line      : %d \r\n", g_nsih->dii.bus_width);
+//	SYSMSG("[Bit] CS Line	     : %d \r\n", g_nsih->dii.chip_num);
 	SYSMSG("[BYTE] Column    Size: %d \r\n", me->column_size);
 	SYSMSG("[BYTE] Row(Page) Size: %d \r\n", me->row_size);
 	SYSMSG("[BYTE] Bank      Size: %d \r\n", me->bank_size);
@@ -104,10 +105,10 @@ int memory_initialize(unsigned int is_resume)
 				(1 << 4));					/* Write Cal enable	*/
 	}
 
-	if (ret >= 0)
-		return -1;
-
 	get_dram_information(&g_ddr_info);
+
+	if (ret < 0)
+		return -1;
 
 #if defined(SIMPLE_MEMTEST)
 	simple_memtest();
