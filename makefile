@@ -16,13 +16,7 @@ SYS_OBJS	+=	startup.o libnx.o libarmv7.o libplat.o armv7_pmu.o delay.o pll.o cmu
 ifeq ($(MEMTEST), y)
 SYS_OBJS	+=	memtester.o
 endif
-
-ifeq ($(CHIPNAME), sip_s31nx)
-SYS_OBJS	+=	sm5011.o
-else
 SYS_OBJS	+=	${PMIC}.o
-endif
-
 SYS_OBJS_LIST	+=	$(addprefix $(DIR_OBJOUTPUT)/,$(SYS_OBJS))
 
 SYS_INCLUDES	+=	-I src/							\

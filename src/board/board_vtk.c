@@ -26,14 +26,14 @@
 #include <i2c_gpio.h>
 #include <asv.h>
 
-#if defined(CHIPID_SIP_S31NX)
+#if defined(PMIC_SM5011)
 #include <sm5011.h>
 
-#define SM5011_I2C_GPIO_GRP 			1
-#define SM5011_I2C_SCL 				28
-#define SM5011_I2C_SDA 				27
-#define SM5011_I2C_SCL_ALT 			0
-#define SM5011_I2C_SDA_ALT 			0
+#define SM5011_I2C_GPIO_GRP	1
+#define SM5011_I2C_SCL		28
+#define SM5011_I2C_SDA		27
+#define SM5011_I2C_SCL_ALT	0
+#define SM5011_I2C_SDA_ALT	0
 
 /************************************************
   * XXX Board (PMIC: )  - Reference 201X.XX.XX
@@ -75,30 +75,30 @@ void pmic_board_init(void)
 	/* ARM Voltage (Default: 1.0V)	*/
 //	mVol = sm5011_get_buck_vol(asv_get_arm_vol());
 	sm5011_buck_output_cntl(BUCK_2_CNTL_REG_1_ADDR, OUTPUT_ON,
-//					mVol, SM5011_BUCK_DATA_MASK);
-					BUCK_V_1000mV, SM5011_BUCK_DATA_MASK, FALSE);
+//				mVol, SM5011_BUCK_DATA_MASK);
+				BUCK_V_1000mV, SM5011_BUCK_DATA_MASK, FALSE);
 	/* Core Voltage (Default: 1.0V) */
 //	mVol = sm5011_get_buck_vol(asv_get_core_vol());
 	sm5011_buck_output_cntl(BUCK_5_CNTL_REG_1_ADDR, OUTPUT_ON,
-//					mVol, SM5011_BUCK_DATA_MASK);
-					BUCK_V_1000mV, SM5011_BUCK_DATA_MASK, FALSE);
+//				mVol, SM5011_BUCK_DATA_MASK);
+				BUCK_V_1000mV, SM5011_BUCK_DATA_MASK, FALSE);
 
 	/* DDRC Voltage (Default: 1.0V) */
 	sm5011_buck_output_cntl(BUCK_4_CNTL_REG_1_ADDR, OUTPUT_ON,
-					BUCK_V_1000mV, SM5011_BUCK_DATA_MASK, FALSE);
+				BUCK_V_1000mV, SM5011_BUCK_DATA_MASK, FALSE);
 
 	/* DDR I/O Voltage (Default: 1.5V) */
 	sm5011_buck_output_cntl(BUCK_3_CNTL_REG_1_ADDR, OUTPUT_ON,
-					BUCK_V_1500mV, SM5011_BUCK_DATA_MASK, FALSE);
+				BUCK_V_1500mV, SM5011_BUCK_DATA_MASK, FALSE);
 
 	/* DDR Device Voltage (Default: 1.5V) */
 	sm5011_buck_output_cntl(BUCK_6_CNTL_REG_1_ADDR, OUTPUT_ON,
-					BUCK_V_1500mV, SM5011_BUCK_DATA_MASK, FALSE);
+				BUCK_V_1500mV, SM5011_BUCK_DATA_MASK, FALSE);
 
 	/* DDRC PLL Voltage (Default: 1.8V) */
 	mVol = sm5011_get_ldo_vol(1800);
 	sm5011_ldo_output_cntl(LDO_15_CNTL_REG_1_ADDR, OUTPUT_ON,
-					mVol, SM5011_LDO_DATA_MASK, TRUE);
+				mVol, SM5011_LDO_DATA_MASK, TRUE);
 }
 
 void pmic_poweroff(void)
@@ -119,15 +119,14 @@ void pmic_poweroff(void)
 	I2C_DEINIT();
 }
 
-
-#elif defined(CHIPID_NXP3220)
+#elif defined(PMIC_NXE1500)
 #include <nxe1500.h>
 
-#define NXE1500_I2C_GPIO_GRP 			1
-#define NXE1500_I2C_SCL 			28
-#define NXE1500_I2C_SDA 			27
-#define NXE1500_I2C_SCL_ALT 			0
-#define NXE1500_I2C_SDA_ALT 			0
+#define NXE1500_I2C_GPIO_GRP	1
+#define NXE1500_I2C_SCL		28
+#define NXE1500_I2C_SDA		27
+#define NXE1500_I2C_SCL_ALT	0
+#define NXE1500_I2C_SDA_ALT	0
 
 /************************************************
   * VTK Board (PMIC: )  - Reference 201X.XX.XX

@@ -34,11 +34,8 @@
 #include <log.h>
 
 #include <bootheader.h>
-
-#if defined(CHIPID_NXP3220) || defined(CHIPID_SIP_S31NX)
 #include <nxp3220.h>
 #include <nxp3220_io_mux.h>
-#endif
 
 #ifdef SET_GLOBAL_VARIABLES
 
