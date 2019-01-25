@@ -25,7 +25,7 @@
 #ifndef __PMIC_H__
 #define __PMIC_H__
 
-/* Function Define */
 void pmic_initialize(void);
+void pmic_board_init(void);
 
-#endif /* #ifndef __PMIC_H__ */
+#endif

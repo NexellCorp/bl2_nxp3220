@@ -8,7 +8,7 @@ CFLAGS				:=
 DEBUG				?= n
 
 # chip name
-#CHIPNAME			?= sip_s31nx
+#CHIPNAME			?= nxp3225
 CHIPNAME			?= nxp3220
 
 # (ddr3/lpddr3) memory type
@@ -111,6 +111,7 @@ CFLAGS				+=	-g -Wall					\
 					-mlittle-endian					\
 					-mstructure-size-boundary=32			\
 					-DCHIPID_$(shell echo $(CHIPNAME) | tr a-z A-Z)	\
+					-DPMIC_$(shell echo $(PMIC) | tr a-z A-Z)	\
 					-D$(shell echo $(MEMTYPE) | tr a-z A-Z)		\
 					-D$(shell echo $(BOARD) | tr a-z A-Z)
 

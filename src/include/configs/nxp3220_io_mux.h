@@ -22,8 +22,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef __SIP_S31NX_IO_MUX_H__
-#define __SIP_S31NX_IO_MUX_H__
+#ifndef __NXP3220_IO_MUX_H__
+#define __NXP3220_IO_MUX_H__
 
 #define PAD_INDEX_GPIOA_GPIO_0				((1 << 16) | (0 << 8) | ( 0 << 3) | 0)
 #define PAD_INDEX_GPIOA_GPIO_1				((1 << 16) | (0 << 8) | ( 1 << 3) | 0)
@@ -645,4 +645,4 @@
 #define PAD_INDEX_UART6_DE				0
 #define PAD_INDEX_UART6_RE				0
 
-#endif // #define __SIP_S31NX_IO_MUX_H__
+#endif // #define __NXP3220_IO_MUX_H__

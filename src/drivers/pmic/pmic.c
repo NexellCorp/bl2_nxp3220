@@ -26,8 +26,6 @@
 #include <pmic.h>
 
 /* external function define */
-extern void pmic_board_init(void);
-
 void pmic_initialize(void)
 {
 	pmic_board_init();
