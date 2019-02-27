@@ -65,9 +65,12 @@ unsigned long abs(int n)
 
 int round_up(double x)
 {
-	if (x >= 0)
-		return (int) (x + 0.5);
-	return (int) (x - 0.5);
+	int int_x = (int)x;
+
+	if (int_x < x)
+		return (int) (int_x + 1);
+
+	return (int)(int_x);
 }
 
 unsigned int get_quotient(unsigned int dividend, unsigned int divisor)

@@ -39,6 +39,7 @@ extern int ddr4_initialize (unsigned int is_resume);
 
 struct dram_device_info g_ddr_info;
 
+#if 0
 static void get_dram_information(struct dram_device_info *me)
 {
 	int byte = 8;
@@ -71,6 +72,7 @@ static void get_dram_information(struct dram_device_info *me)
 	SYSMSG("############################################################\r\n");
 #endif
 }
+#endif
 
 int memory_initialize(unsigned int is_resume)
 {
@@ -82,7 +84,6 @@ int memory_initialize(unsigned int is_resume)
 #elif defined(DDR4)
 	ret = ddr4_initialize(is_resume);
 #endif
-
 	NOTICE("Memory Initialize %s! (%d:%d) \r\n\n",
 			(ret >= 0) ? "Done" : "Failed", ret, is_resume);
 
@@ -100,14 +101,15 @@ int memory_initialize(unsigned int is_resume)
 				(1 << 0) |					/* Bit Cal state	*/
 				(1 << 1) |					/* Center, Margin value */
 				(1 << 2) |					/* Lock Value		*/
-				(1 << 3) |					/* Read Cal enable	*/
+				(0 << 3) |					/* Read Cal enable	*/
 				(1 << 4));					/* Write Cal enable	*/
 	}
 
+#ifdef DDR_TEST_MODE
+	get_read_test(0x40000000);
+#endif
 	if (ret >= 0)
 		return -1;
-
-	get_dram_information(&g_ddr_info);
 
 #if defined(SIMPLE_MEMTEST)
 	simple_memtest();

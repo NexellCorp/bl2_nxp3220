@@ -251,6 +251,14 @@ int hw_bit_leveling(void)
 
 	reg_write_phy(DISABLE_GATING_FOR_SCL, 0x00000000);
 
+	// @modified martin MPR cal add
+	reg_write_phy(SCL_START, (0x308 << 20));					// Initialize the data by setting wr_only
+
+	do {
+		status = ((reg_read_phy(SCL_START) >> 28) & 0x1);
+	} while (status);
+
+#ifdef DDR_TEST_MODE
 	reg_write_phy(SCL_DATA_0, 0xFF00FF00);					// Write in the bit leveling data
 	reg_write_phy(SCL_DATA_1, 0xFF00FF00);
 	reg_write_phy(PHY_SCL_START_ADDR, (0x8 << 16));				// Set the address to start at in the DRAM, Note scl_start_col_addr moves in ddr4
@@ -260,14 +268,18 @@ int hw_bit_leveling(void)
 		status = ((reg_read_phy(SCL_START) >> 28) & 0x1);
 	} while (status);
 
+	reg_write_phy(SCL_DATA_0, 0x789b3de0);					// Assume that bit-leveling has used these
+	reg_write_phy(SCL_DATA_1, 0xf10e4a56);					// registers so re-write the scl data
 	reg_write_phy(PHY_SCL_START_ADDR, (0x0 << 16));				// Set the address for scl start
 	reg_write_phy(SCL_START, (0x305 << 20));				// Set bit leveling normal from DRAM with write side
+     // reg_write_phy(SCL_START, (0x105 << 20));				// Set bit leveling normal from DRAM with write side
 	reg_read_phy(SCL_START);
 
 	do {
 		status = ((reg_read_phy(SCL_START) >> 28) & 0x1);
 	} while (status);
 
+#endif
 	reg_read_phy(DYNAMIC_WRITE_BIT_LVL);					// Todo WR_BIT_LVL fail check with reg_value
 
 	reg_write_phy(DISABLE_GATING_FOR_SCL, 0x00000001);

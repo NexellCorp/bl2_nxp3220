@@ -204,6 +204,7 @@ unsigned int testpattern[8] = {
 	0x0000ffff, 0x0000ffff
 #endif
 };
+
 const unsigned int wtp[8] = {
 	0x789b3de0, 0xf10e4a56,
 	0xc6a21359, 0x427a9bef,
@@ -228,6 +229,31 @@ int checkpattern(unsigned int *src, unsigned int *target, unsigned int mask)
 	return 1;
 }
 
+#ifdef DDR_TEST_MODE
+static int memtest_checkpattern(unsigned int *src, unsigned int *target,
+			 unsigned int mask)
+{
+	int i;
+	int res = 1;
+	for (i = 0; i < 8; i++) {
+		if ((src[i] & mask) != (target[i] & mask)) {
+			unsigned int *buf = target;
+
+			printf("src[%d] %x buf[%d] %x \r\n",0, src[0], 0, buf[0]);
+			printf("src[%d] %x buf[%d] %x \r\n",1, src[1], 1, buf[1]);
+			printf("src[%d] %x buf[%d] %x \r\n",2, src[2], 2, buf[2]);
+			printf("src[%d] %x buf[%d] %x \r\n",3, src[3], 3, buf[3]);
+			printf("src[%d] %x buf[%d] %x \r\n",4, src[4], 4, buf[4]);
+			printf("src[%d] %x buf[%d] %x \r\n",5, src[5], 5, buf[5]);
+			printf("src[%d] %x buf[%d] %x \r\n",6, src[6], 6, buf[6]);
+			printf("src[%d] %x buf[%d] %x \r\n",7, src[7], 7, buf[7]);
+			return 0;
+		}
+	}
+	return 1;
+}
+#endif
+
 #if 1
 /* 60 120 240 240 */
 /* 0001, 0010:240, 0100, 0011:120, 0110, 0101:80, 1000, 0111:60
@@ -241,6 +267,7 @@ void setreadodt(unsigned int rodt)
 	reg_value = (reg_value & ~(0xFUL << 0)) | (((rodt << 1) + 1) & 0xF) << 0;
 	reg_write_phy(PHY_PAD_CTRL, reg_value);
 }
+
 void ddr3mrs(SDRAM_MODE_REG MRx, union DDR3_SDRAM_MR opcode)
 {
 	unsigned int cmd_1st, cmd_2nd, rdata;
@@ -263,6 +290,7 @@ void ddr3mrs(SDRAM_MODE_REG MRx, union DDR3_SDRAM_MR opcode)
 		rdata = reg_read_ctrl(HOST_CMD_ISSUE);
 	} while (rdata & 1 << 4);
 }
+
 /* 0: RZQ/6, 1: RZQ/7, 2, 3: revd */
 void setreadds(unsigned int rds)
 {
@@ -277,12 +305,14 @@ void setreadds(unsigned int rds)
 
 	ddr3mrs(SDRAM_MODE_REG_MR1, opcode);
 }
+
 void setwriteds(unsigned int wds)
 {
 	unsigned int reg_value = reg_read_phy(PHY_PAD_CTRL);
 	reg_value = (reg_value & ~(0xFUL << 4)) | (((wds << 1) + 1) & 0xF) << 4;
 	reg_write_phy(PHY_PAD_CTRL, reg_value);
 }
+
 /* 0: disable, 1: RZQ/4, 2: RZQ/2, 3: RZQ/6, 4: RZQ/12, 5: RZQ/8, 6, 7: revd */
 void setwriteodtn(unsigned int wodtn)
 {
@@ -298,6 +328,7 @@ void setwriteodtn(unsigned int wodtn)
 
 	ddr3mrs(SDRAM_MODE_REG_MR1, opcode);
 }
+
 /* 0: disable, 1: RZQ/4(60ohm), 2: RZQ/2(120ohm), 3: revd */
 void setwriteodtw(unsigned int wodtw)
 {
@@ -311,6 +342,7 @@ void setwriteodtw(unsigned int wodtw)
 	ddr3mrs(SDRAM_MODE_REG_MR2, opcode);
 }
 #endif
+
 #define RETRYCNT	(64 * 1)
 int checkresult(unsigned int targetaddr, unsigned int bits,
 		int trycnt, int rw)
@@ -319,7 +351,7 @@ int checkresult(unsigned int targetaddr, unsigned int bits,
 	if (rw == READTRIM)
 		tp = testpattern;
 	else
-		tp = wtp;
+		tp = (unsigned int *)wtp;
 
 	do {
 		if (rw == WRITETRIM)
@@ -330,6 +362,22 @@ int checkresult(unsigned int targetaddr, unsigned int bits,
 	} while (--trycnt);
 	return 1;
 }
+
+#ifdef DDR_TEST_MODE
+int read_checkresult(unsigned int targetaddr, unsigned int bits,
+		int trycnt)
+{
+	unsigned int buf[8], *tp;
+	tp = testpattern;
+	while(1)
+	{
+		burstread8((unsigned int *)targetaddr, buf);
+		if (!checkpattern(tp, buf, 0xffffffff))
+			return 1;
+	}
+}
+#endif
+
 int findbest(unsigned char dd[], int cnt)
 {
 	int best = 0, i, bi = 0;
@@ -350,6 +398,7 @@ int findbest(unsigned char dd[], int cnt)
 	}
 	return bi;
 }
+
 int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 {
 	unsigned int lane, i;
@@ -473,6 +522,7 @@ int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 
 int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 {
+#if 0
 	unsigned int lane, i;
 	int cm[32];
 	unsigned char lr[20];
@@ -591,6 +641,9 @@ int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 		if (minm > cm[i * 2 + 1])
 			minm = cm[i * 2 + 1];
 	return minm;
+#else
+	return 0;
+#endif
 }
 
 void getdlllockvalue(int cnt)
@@ -693,6 +746,7 @@ void getimpedance(unsigned int testtargetaddr, unsigned int option, int cs)
 	if (cs)
 		setwriteodtw(maxk);
 }
+
 void trimtest(unsigned int testtargetaddr, unsigned int option)
 {
 	if (option & 1 << 2)
@@ -700,14 +754,40 @@ void trimtest(unsigned int testtargetaddr, unsigned int option)
 
 	if (option & 1 << 5)
 		getimpedance(testtargetaddr, option, 1);
+
 	printf("phy ver:%x\r\n", *(unsigned int *)0x230911B0);
 
 	if (option & 1 << 3) {
 		get_read_bit_margin(testtargetaddr, option);
 		printf("read bit cal done\r\n");
 	}
+
 	if (option & 1 << 4) {
 		get_write_bit_margin(testtargetaddr, option);
 		printf("write bit cal done\r\n\n");
 	}
 }
+
+#ifdef DDR_TEST_MODE
+int get_read_test(unsigned int targetaddr)
+{
+	unsigned int result_check, i;
+	unsigned int buf[8], *tp;
+	tp = wtp;
+
+	printf("Enter: %s !!!!!!\r\n", __func__);
+	for (i = 0; i < 100000; i++) {
+		burstwrite8((unsigned int *)targetaddr+(0x1000*i), tp);
+		burstread8((unsigned int *)targetaddr+(0x1000*i), buf);
+		result_check= memtest_checkpattern(tp, buf, 0xFFFFFFFF);
+
+		if (!result_check) {
+			printf("read test error!! %d 0x%x\n", i, targetaddr+(0x1000*i));
+			return 0;
+		}
+	}
+	printf("End: %s !!!!!!\r\n", __func__);
+
+	return 1;
+}
+#endif
