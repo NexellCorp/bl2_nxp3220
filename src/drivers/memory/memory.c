@@ -108,7 +108,7 @@ int memory_initialize(unsigned int is_resume)
 #ifdef DDR_TEST_MODE
 	get_read_test(0x40000000);
 #endif
-	if (ret >= 0)
+	if (ret < 0)
 		return -1;
 
 #if defined(SIMPLE_MEMTEST)
