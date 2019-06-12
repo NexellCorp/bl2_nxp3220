@@ -36,6 +36,13 @@ extern void vddpwron_ddr_on(void);
 #define RSTRELEASE_DDR_AXI			(0x23000000 + 0x400 + 0x30)
 #define RSTENTER_DDR_AXI			(0x23000000 + 0x400 + 0x40)
 
+// @todo ddr drive and rtt value
+#define DDR_DRV 0 // 40 Ohm
+//#define DDR_DRV 1 // 34 Ohm
+
+//#define DDR_RTT 0 // disbale
+//#define DDR_RTT 1 // RZQ/4(60 ohm)
+#define DDR_RTT 2 // RZQ/2(120 ohm)
 void dphy_global_reset(void)
 {
 	unsigned int reg_value = (0x3 << 0);					/* RSTRELEASE_DDR_RST */
@@ -173,7 +180,7 @@ void exit_self_refresh(void)
 	union DDR3_SDRAM_MR MR;
 
 	int nCWL = (g_nsih->dii.ac_timing.WL + 0);
-	int tDLLK = 512;							// 512 nCK
+	int tDLLK = 512;				// 512 nCK
 	int tXSDLL = tDLLK;
 
 	int wait_cycle = g_nsih->dii.ac_timing.tXS;
@@ -188,15 +195,15 @@ void exit_self_refresh(void)
 
 	/* Step 03. (DRAM) ODT On */
 	MR.REG		= 0;
-	MR.MR2.RTT_WR	= g_nsih->dsinfo.mr2_rtt_wr;				// Dynamic ODT (00: Rtt disabled, 01: RZQ/4, 10: RZQ/2, 11: reserved)
-	MR.MR2.SRT      = 0;							// Self Refresh normal range, if (ASR == 1) SRT = 0;
-	MR.MR2.ASR      = 0;							// Auto Self Refresh Enable
-	MR.MR2.CWL	= (nCWL - 5);						// CAS Write Latency (000: 5CK(tCK>=2.5ns), 001: 6CK(2.5ns>tCK>=1.875ns, 010: 7CK(1.875ns>tCK>=1.25ns), 011: 8CK(1.5ns>tCK>=1.25ns), 100: 9CK(1.25ns>tCK>=1.07ns))
+	MR.MR2.RTT_WR	= g_nsih->dsinfo.mr2_rtt_wr;	// Dynamic ODT (00: Rtt disabled, 01: RZQ/4, 10: RZQ/2, 11: reserved)
+	MR.MR2.SRT      = 0;				// Self Refresh normal range, if (ASR == 1) SRT = 0;
+	MR.MR2.ASR      = 0;				// Auto Self Refresh Enable
+	MR.MR2.CWL	= (nCWL - 5);			// CAS Write Latency (000: 5CK(tCK>=2.5ns), 001: 6CK(2.5ns>tCK>=1.875ns, 010: 7CK(1.875ns>tCK>=1.25ns), 011: 8CK(1.5ns>tCK>=1.25ns), 100: 9CK(1.25ns>tCK>=1.07ns))
 	host_cmd_load_mr(HOST_CMD_1_2, SDRAM_MODE_REG_MR2, MR.REG, wait_cycle);
 
 	/* Step 04. (DRAM) Set the Drive Strength */
 	MR.REG          = 0;
-	MR.MR1.DLL      = 0;							// 0: Enable, 1 : Disable
+	MR.MR1.DLL      = 0;				// 0: Enable, 1 : Disable
 	MR.MR1.AL	= 0;
 	MR.MR1.ODS0	= ((g_nsih->dsinfo.mr1_ods >> 0) & 0x1);
 	MR.MR1.ODS1	= ((g_nsih->dsinfo.mr1_ods >> 1) & 0x1);
@@ -229,116 +236,129 @@ void mem_init_seq_ddr3 (unsigned int is_resume)
 {
 	int mr0_cl, mr0_wr;
 
-	int nCL  = (g_nsih->dii.ac_timing.RL + 0);				// RL + AL  tCK
-	int nCWL = (g_nsih->dii.ac_timing.WL + 0);				// WL + AL  tCK
+	int nCL  = (g_nsih->dii.ac_timing.RL + 0);	// RL + AL  tCK
+	int nCWL = (g_nsih->dii.ac_timing.WL + 0);	// WL + AL  tCK
 	int nWR  = (g_nsih->dii.ac_timing.tWR * 2);
 
 	int wait_cycle;
 
 	int reg_value;
 
-	if (is_resume != TRUE) {
-		reg_write_ctrl(MEM_START, 0x1);					// Kick off controller initialization state m/c
-
-		/* Step 01. Power ON. Assert RESET# and ensure CKE is LOW at least max of 10ns or 5tCK */
-		reg_clear_ctrl(MEM_WIDTH, (1 << 4));				// Bit 4 controls dfi_reset_n
-
-		host_cmd_load(HOST_CMD_1_0, 0, CMD_CKE_LOW, 5);//max(8000/2500, 5));
-		host_cmd_load(HOST_CMD_1_1, 0, CMD_CKE_LOW, 0);
-
-		/* Issue 2 commands to the intialization state m/c and wait for it to be done */
-		reg_write_ctrl(HOST_CMD_ISSUE, 0x11);
-		while (reg_read_ctrl(HOST_CMD_ISSUE) & 0x10);
-		/* Issue 2 commands to the intialization state m/c and wait for it to be done. */
-
-	 	/*
-	 	 * Step 02. DRAM RESET# pin must be LOW for at least 200us before DRAM is brought out of reset
-	  	 * We can't do this in simulation. Therefore ignore the following warning from the DRAM model:
-	  	 * WARNING: 200 us is required before RST_N goes inactive.
-	  	 * Insert software function to wait 200us here.
-	  	 */
-		udelay(200000);
-
-		/* 03. CKE must be LOW 10ns prior to RESET# transitioning HIGH A`lready taken care of. So Deasserting RESET# */
-		reg_set_ctrl(MEM_WIDTH, (1 << 4)|(1 << 1));			// dfi_reset_n
-
-		/*
-		 * Step 04. After RESET# is deasserted, wait 500us with CKE LOW
-		 * We can't do this in simulation. Therefore ignore the following warning from the DRAM model:
-		 * WARNING: 500 us is required after RST_N goes inactive before CKE goes active.
-		 * Insert software function to wait 500us here..
-		 */
-		udelay(500000);
-
-		/* Step 05. CKE may be brought HIGH and only NOP or DES commands may be issued for tXPR */
-		int tXPR_MAX = (g_nsih->dii.ac_timing.tRFC + 10);
-		host_cmd_load(HOST_CMD_1_0, 0, CMD_IDLE_NOP, tXPR_MAX);
-
-		wait_cycle = (g_nsih->dii.ac_timing.tMRD);
-
-		/* Step 06. Issue an MRS command to MR2. */
-		MR2.REG			= 0;
-		MR2.MR2.RTT_WR		= g_nsih->dsinfo.mr2_rtt_wr;		// Dynamic ODT (00: Rtt disabled, 01: RZQ/4, 10: RZQ/2, 11: reserved)
-		MR2.MR2.CWL		= (nCWL - 5);				// CAS Write Latency (000: 5CK(tCK>=2.5ns), 001: 6CK(2.5ns>tCK>=1.875ns, 010: 7CK(1.875ns>tCK>=1.25ns), 011: 8CK(1.5ns>tCK>=1.25ns), 100: 9CK(1.25ns>tCK>=1.07ns))
-		host_cmd_load_mr(HOST_CMD_1_1, SDRAM_MODE_REG_MR2, MR2.REG, wait_cycle);
-
-		/* Step 07. Issue an MRS command to MR3. */
-		MR3.REG			= 0;
-		host_cmd_load_mr(HOST_CMD_1_2, SDRAM_MODE_REG_MR3, MR3.REG, wait_cycle);
-
-		/* Step 08. Issue an MRS command to MR1. */
-		MR1.REG			= 0;
-		MR1.MR1.DLL		= 0;					// 0: Enable, 1: Disable
-		MR1.MR1.AL		= 0;
-		MR1.MR1.RTT_Nom0	= ((g_nsih->dsinfo.mr1_rtt_nom >> 0) & 0x1);
-		MR1.MR1.RTT_Nom1	= ((g_nsih->dsinfo.mr1_rtt_nom >> 1) & 0x1);
-		MR1.MR1.RTT_Nom2	= ((g_nsih->dsinfo.mr1_rtt_nom >> 2) & 0x1);
-		MR1.MR1.ODS0		= ((g_nsih->dsinfo.mr1_ods >> 0) & 0x1);
-		MR1.MR1.ODS1		= ((g_nsih->dsinfo.mr1_ods >> 1) & 0x1);
-		MR1.MR1.QOff		= 0;
-		MR1.MR1.WL		= 0;
-		host_cmd_load_mr(HOST_CMD_1_3, SDRAM_MODE_REG_MR1, MR1.REG, wait_cycle);
-
-		/* Step 09. Issue an MRS command to MR0. */
-		if ((nCL >= 5) && (11 >= nCL))
-			mr0_cl = ((nCL -  4) << 1);
-		else if ((nCL >= 12) && (16 >= nCL))
-			mr0_cl = (((nCL - 12) << 1) | 0x1);
-		else
-			mr0_cl = 0;
-
-		if ((nWR >= 5) && (8 >= nWR))
-			mr0_wr = (nWR - 4);
-		else if ((nWR >= 10) && (nWR <= 14))
-			mr0_wr = (nWR / 2);
-		else
-			mr0_wr = 0;
-
-		MR0.REG 		= 0;
-		MR0.MR0.PD		= 1;					// PD_EXIT
-		MR0.MR0.WR		= mr0_wr;
-		MR0.MR0.DLL		= 1;					// DLL_RESET
-		MR0.MR0.CL0		= ((mr0_cl >> 0) & 0x1);
-		MR0.MR0.CL1		= ((mr0_cl >> 1) & 0x7);
-		host_cmd_load_mr(HOST_CMD_1_4, SDRAM_MODE_REG_MR0, MR0.REG, 0x6);//tMOD);
-
-		/*
-		 * Step 10. Issue a ZQCL command to calibrate Rtt and Ron values
-		 * for the process voltage temperature
-		 * (PVT). Prior to normal operation, tZQinit must be satisfied.
-		 */
-		wait_cycle = g_nsih->dii.ac_timing.tZQinit;
-		host_cmd_load(HOST_CMD_1_5, 0x04, CMD_ZQ_CAL, wait_cycle);
-
-		// Step 11. Issue 6 command to the intialization state m/c and wait for it to be done
-		reg_write_ctrl(HOST_CMD_ISSUE, 0x15);
-		while (reg_read_ctrl( HOST_CMD_ISSUE) & 0x10);
-
-		reg_value = ((1 << 1) |						// start_mem_init
-			     (1 << 0));						// mem_init_done
-		reg_write_ctrl(MEM_START, reg_value);				// Set the Initialization complete bit.
+	if (is_resume == TRUE) {
+		goto skip;
 	}
 
+	reg_write_ctrl(MEM_START, 0x1);		// Kick off controller initialization state m/c
+
+	/* Step 01. Power ON. Assert RESET# and ensure CKE is LOW at least max of 10ns or 5tCK */
+	reg_clear_ctrl(MEM_WIDTH, (1 << 4));	// Bit 4 controls dfi_reset_n
+
+	host_cmd_load(HOST_CMD_1_0, 0, CMD_CKE_LOW, 5);//max(8000/2500, 5));
+	host_cmd_load(HOST_CMD_1_1, 0, CMD_CKE_LOW, 0);
+
+	/* Issue 2 commands to the intialization state m/c and wait for it to be done */
+	reg_write_ctrl(HOST_CMD_ISSUE, 0x11);
+	while (reg_read_ctrl(HOST_CMD_ISSUE) & 0x10);
+	/* Issue 2 commands to the intialization state m/c and wait for it to be done. */
+
+	/*
+	 * Step 02. DRAM RESET# pin must be LOW for at least 200us before DRAM is brought out of reset
+	 * We can't do this in simulation. Therefore ignore the following warning from the DRAM model:
+	 * WARNING: 200 us is required before RST_N goes inactive.
+	 * Insert software function to wait 200us here.
+	 */
+	udelay(4800);
+
+	/* 03. CKE must be LOW 10ns prior to RESET# transitioning HIGH A`lready taken care of. So Deasserting RESET# */
+	reg_set_ctrl(MEM_WIDTH, (1 << 4)|(1 << 1));			// dfi_reset_n
+
+	/*
+	 * Step 04. After RESET# is deasserted, wait 500us with CKE LOW
+	 * We can't do this in simulation. Therefore ignore the following warning from the DRAM model:
+	 * WARNING: 500 us is required after RST_N goes inactive before CKE goes active.
+	 * Insert software function to wait 500us here..
+	 */
+	udelay(12000);
+
+	/* Step 05. CKE may be brought HIGH and only NOP or DES commands may be issued for tXPR */
+	int tXPR_MAX = (g_nsih->dii.ac_timing.tRFC + 10);
+	host_cmd_load(HOST_CMD_1_0, 0, CMD_IDLE_NOP, tXPR_MAX);
+
+	wait_cycle = (g_nsih->dii.ac_timing.tMRD);
+
+	/* Step 06. Issue an MRS command to MR2. */
+	MR2.REG			= 0;
+	MR2.MR2.RTT_WR		= g_nsih->dsinfo.mr2_rtt_wr;		// Dynamic ODT (00: Rtt disabled, 01: RZQ/4, 10: RZQ/2, 11: reserved)
+	unsigned int DDR_ODT = 1;
+	unsigned int DDR_DS = 0;
+	MR2.MR2.RTT_WR		= DDR_ODT;//g_nsih->dsinfo.mr2_rtt_wr;		// Dynamic ODT (00: Rtt disabled, 01: RZQ/4, 10: RZQ/2, 11: reserved)
+	//MR2.MR2.RTT_WR		= 0;		// Dynamic ODT (00: Rtt disabled, 01: RZQ/4, 10: RZQ/2, 11: reserved)
+	//MR2.MR2.RTT_WR		= 1;		// Dynamic ODT (00: Rtt disabled, 01: RZQ/4, 10: RZQ/2, 11: reserved)
+	//MR2.MR2.RTT_WR		= 2;		// Dynamic ODT (00: Rtt disabled, 01: RZQ/4, 10: RZQ/2, 11: reserved)
+	MR2.MR2.CWL		= (nCWL - 5);				// CAS Write Latency (000: 5CK(tCK>=2.5ns), 001: 6CK(2.5ns>tCK>=1.875ns, 010: 7CK(1.875ns>tCK>=1.25ns), 011: 8CK(1.5ns>tCK>=1.25ns), 100: 9CK(1.25ns>tCK>=1.07ns))
+	host_cmd_load_mr(HOST_CMD_1_1, SDRAM_MODE_REG_MR2, MR2.REG, wait_cycle);
+
+	/* Step 07. Issue an MRS command to MR3. */
+	MR3.REG			= 0;
+	host_cmd_load_mr(HOST_CMD_1_2, SDRAM_MODE_REG_MR3, MR3.REG, wait_cycle);
+
+	/* Step 08. Issue an MRS command to MR1. */
+	MR1.REG			= 0;
+	MR1.MR1.DLL		= 0;					// 0: Enable, 1: Disable
+	MR1.MR1.AL		= 0;
+	MR1.MR1.RTT_Nom0	= ((g_nsih->dsinfo.mr1_rtt_nom >> 0) & 0x1);
+	MR1.MR1.RTT_Nom1	= ((g_nsih->dsinfo.mr1_rtt_nom >> 1) & 0x1);
+	MR1.MR1.RTT_Nom2	= ((g_nsih->dsinfo.mr1_rtt_nom >> 2) & 0x1);
+	//MR1.MR1.ODS0		= ((g_nsih->dsinfo.mr1_ods >> 0) & 0x1);
+	//MR1.MR1.ODS1		= ((g_nsih->dsinfo.mr1_ods >> 1) & 0x1);
+	MR1.MR1.ODS0		= DDR_DS & 0x1;
+	MR1.MR1.ODS1		= (DDR_DS>>1) & 0x1;
+	MR1.MR1.QOff		= 0;
+	MR1.MR1.WL		= 0;
+	host_cmd_load_mr(HOST_CMD_1_3, SDRAM_MODE_REG_MR1, MR1.REG, wait_cycle);
+
+//	printf("[info] %x MR2 rtt : %x, MR1 ODS : %x\r\n",
+//			MR1.REG, MR2.MR2.RTT_WR, (MR1.MR1.ODS1<<1) | MR1.MR1.ODS0);
+	/* Step 09. Issue an MRS command to MR0. */
+	if ((nCL >= 5) && (11 >= nCL))
+		mr0_cl = ((nCL -  4) << 1);
+	else if ((nCL >= 12) && (16 >= nCL))
+		mr0_cl = (((nCL - 12) << 1) | 0x1);
+	else
+		mr0_cl = 0;
+
+	if ((nWR >= 5) && (8 >= nWR))
+		mr0_wr = (nWR - 4);
+	else if ((nWR >= 10) && (nWR <= 14))
+		mr0_wr = (nWR / 2);
+	else
+		mr0_wr = 0;
+
+	MR0.REG 		= 0;
+	MR0.MR0.PD		= 1;					// PD_EXIT
+	MR0.MR0.WR		= mr0_wr;
+	MR0.MR0.DLL		= 1;					// DLL_RESET
+	MR0.MR0.CL0		= ((mr0_cl >> 0) & 0x1);
+	MR0.MR0.CL1		= ((mr0_cl >> 1) & 0x7);
+	host_cmd_load_mr(HOST_CMD_1_4, SDRAM_MODE_REG_MR0, MR0.REG, 0x6);//tMOD);
+
+	/*
+	 * Step 10. Issue a ZQCL command to calibrate Rtt and Ron values
+	 * for the process voltage temperature
+	 * (PVT). Prior to normal operation, tZQinit must be satisfied.
+	 */
+	wait_cycle = g_nsih->dii.ac_timing.tZQinit;
+	host_cmd_load(HOST_CMD_1_5, 0x04, CMD_ZQ_CAL, wait_cycle);
+
+	// Step 11. Issue 6 command to the intialization state m/c and wait for it to be done
+	reg_write_ctrl(HOST_CMD_ISSUE, 0x15);
+	while (reg_read_ctrl( HOST_CMD_ISSUE) & 0x10);
+
+	reg_value = ((1 << 1) |						// start_mem_init
+		     (1 << 0));						// mem_init_done
+	reg_write_ctrl(MEM_START, reg_value);				// Set the Initialization complete bit.
+
+skip:
 	/* Wait for Analog DLL to lock */
 	reg_value = reg_read_phy( UNQ_ANALOG_DLL_2);		// 0x160
 	while ((reg_value & 0x00000003) != 0x00000003)

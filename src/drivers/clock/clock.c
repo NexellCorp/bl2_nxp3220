@@ -29,11 +29,11 @@
 
 void clock_information(void)
 {
-	INFO("PLL0:%d  PLL1:%d(PLL/2) PLL_CPU:%d PLL_DDR0:%d(PLL/2) PLL_DDR1:%d(PLL/2)\r\n\n",
+	INFO("\tPLL0:%d\r\n\t\tPLL1:%d(PLL/2)\r\n\t\tPLL_CPU:%d\r\n\t\tPLL_DDR0:%d(PLL/2)\r\n\t\tPLL_DDR1:%d(PLL/2)\r\n\n",
 			get_pll_freq(0), get_pll_freq(1),
 			get_pll_freq(2), get_pll_freq(3),
 			get_pll_freq(4));
-	INFO("DDR_0_AXI_CLK:%d, DDR_0_APB_CLK:%d, CPU_0_AXI_CLK:%d, SYS_0_AXI_CLK:%d\r\n",
+	INFO("\tDDR_0_AXI_CLK:%d\r\n\t\tDDR_0_APB_CLK:%d\r\n\t\tCPU_0_AXI_CLK:%d\r\n\t\tSYS_0_AXI_CLK:%d\r\n",
 		cmu_get_rate(DDR_0_AXI_CLK), cmu_get_rate(DDR_0_APB_CLK),
 		cmu_get_rate(CPU_0_AXI_CLK), cmu_get_rate(SYS_0_AXI_CLK));
 }

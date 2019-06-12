@@ -84,7 +84,7 @@ int memory_initialize(unsigned int is_resume)
 #elif defined(DDR4)
 	ret = ddr4_initialize(is_resume);
 #endif
-	NOTICE("Memory Initialize %s! (%d:%d) \r\n\n",
+	NOTICE("Memory Initialize %s! (ret:%d:resume:%d) \r\n\n",
 			(ret >= 0) ? "Done" : "Failed", ret, is_resume);
 
 	/* @brief: auto write-leveling  */
@@ -95,19 +95,6 @@ int memory_initialize(unsigned int is_resume)
 	if ((g_nsih->cal_mode >> 0) & 0x1)
 		hw_bit_leveling();
 
-	/* @brief: "libddr.a" in manual bit-leveling */
-	if ((g_nsih->cal_mode >> 1) & 0x1) {
-		trimtest(0x40000000,
-				(1 << 0) |					/* Bit Cal state	*/
-				(1 << 1) |					/* Center, Margin value */
-				(1 << 2) |					/* Lock Value		*/
-				(0 << 3) |					/* Read Cal enable	*/
-				(1 << 4));					/* Write Cal enable	*/
-	}
-
-#ifdef DDR_TEST_MODE
-	get_read_test(0x40000000);
-#endif
 	if (ret < 0)
 		return -1;
 

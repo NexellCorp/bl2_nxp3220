@@ -32,7 +32,4 @@ extern void exit_self_refresh(void);
 /* Function Define */
  int memory_initialize(unsigned int is_resume);
 
-/* "libddr.a" in function */
-void trimtest(unsigned int testtargetaddr, unsigned int option);
-
 #endif // #ifndef _MEMORY_H__

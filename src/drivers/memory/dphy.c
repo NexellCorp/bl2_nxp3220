@@ -151,15 +151,13 @@ int hw_write_leveling(void)
 
 	/* step 03. display the write-leveling information */
 	wrlvl_rslt = ((reg_read_phy(WRLVL_CTRL)	>> 0) & lane_mask);
-	printf("####### Write Leveling - Information ########\r\n");
-	printf("Write Leveling %s (%d) \r\n", (wrlvl_rslt == 0x3)
+	printf("Write Leveling %s (%d)\r\n", (wrlvl_rslt == 0x3)
 		? "Pass!!" : "Failed!!", wrlvl_rslt);
-	printf("#############################################\r\n");
 
 	return true;
 }
 
-void hw_bit_leveling_information(void)
+void hw_bit_leveling_information(int rw)
 {
 	int op_bitwise_trim, ip_bitwise_trim;
 	int bit_lvl_failure_status, analog_dll_lock, dll_ps;
@@ -168,69 +166,76 @@ void hw_bit_leveling_information(void)
 	int once = 0;
 
 	printf("######## Bit Leveling - Information #########\r\n");
+	if (rw == 0)
+		goto readinfo;
 	printf("Write Trim:\r\n");
 	for (lane = 0; lane < MEM_STRB_WIDTH; lane++) {
-		bit_lvl_failure_status = (reg_read_phy(DYNAMIC_WRITE_BIT_LVL)
-			>> (20 + lane)) & 0x1;
-		if (!bit_lvl_failure_status) {
-			if (!once) {
-				printf("	", lane);
-				for (dq_num = 0; dq_num < 10; dq_num++) {
-					printf("%s%d  ",
-						(dq_num != 8) ? ((dq_num != 9) ?
-						" DQ":"DQS"):(" DM"), dq_num);
-				}
-				printf("\r\n");
-				once = 1;
-			}
-			printf("Lane %d  ", lane);
+		bit_lvl_failure_status =
+			(reg_read_phy(DYNAMIC_WRITE_BIT_LVL) >> (20 + lane)) & 0x1;
+		if (bit_lvl_failure_status) {
+			printf("no bit leveling info\r\n");
+			continue;
+		}
+		if (!once) {
+			printf("        ", lane);
 			for (dq_num = 0; dq_num < 10; dq_num++) {
-				reg_write_phy(PHY_LANE_SEL,
-					((lane * (BITLVL_DLY_WIDTH + 1)) |
-					 (dq_num << 8)));
-				op_bitwise_trim =
-					reg_read_phy(OP_DQ_DM_DQS_BITWISE_TRIM);
-				inc  = ((op_bitwise_trim >> 6) & 0x1);
-				step = ((op_bitwise_trim >> 0) & 0x3F);
-				printf(" %c%2d	",
-					(inc ? '+': (step != 0 ? '-': ' ')), step);
+				printf("%s%d  ",
+					(dq_num != 8) ? ((dq_num != 9) ?
+					" DQ":"DQS"):(" DM"), dq_num);
 			}
 			printf("\r\n");
-		} else
-			printf("bit leveling failure\r\n");
+			once = 1;
+		}
+		printf("Lane %d  ", lane);
+		for (dq_num = 0; dq_num < 10; dq_num++) {
+			reg_write_phy(PHY_LANE_SEL,
+				((lane * (BITLVL_DLY_WIDTH + 1)) |
+				 (dq_num << 8)));
+			op_bitwise_trim =
+				reg_read_phy(OP_DQ_DM_DQS_BITWISE_TRIM);
+			inc  = ((op_bitwise_trim >> 6) & 0x1);
+			step = ((op_bitwise_trim >> 0) & 0x3F);
+			printf(" %c%2d  ",
+				(inc ? '+': (step != 0 ? '-': ' ')), step);
+		}
+		printf("\r\n");
 	}
 	printf("\r\n");
 
+	if (rw == 1)
+		return;
+readinfo:
 	once = 0;
 	printf("Read Trim:\r\n");
 	for (lane = 0; lane < MEM_STRB_WIDTH; lane++) {
-		bit_lvl_failure_status = (reg_read_phy(DYNAMIC_BIT_LVL)
-			>> (14 + lane)) & 0x1;
-		if (!bit_lvl_failure_status) {
-			if (!once) {
-				printf("	", lane);
-				for (dq_num = 0; dq_num < 9; dq_num++) {
-					printf("%s%d  ",
-						(dq_num != 8) ? " DQ":"DQS", dq_num);
-				}
-				printf("\r\n");
-				once = 1;
-			}
-			printf("Lane %d  ", lane);
+		bit_lvl_failure_status =
+			(reg_read_phy(DYNAMIC_BIT_LVL) >> (14 + lane)) & 0x1;
+		if (bit_lvl_failure_status) {
+			printf("no bit leveling info\r\n");
+			continue;
+		}
+		if (!once) {
+			printf("        ", lane);
 			for (dq_num = 0; dq_num < 9; dq_num++) {
-				reg_write_phy(PHY_LANE_SEL,
-					(lane * (BITLVL_DLY_WIDTH + 1)) |
-					(dq_num << 8));
-				ip_bitwise_trim =
-					reg_read_phy(IP_DQ_DQS_BITWISE_TRIM);
-				inc  = ((ip_bitwise_trim >> 6) & 0x1);
-				step = ((ip_bitwise_trim >> 0) & 0x3F);
-				printf(" %c%2d	",
-					(inc ? '+': (step != 0 ? '-': ' ')), step);
+				printf("%s%d  ",
+					(dq_num != 8) ? " DQ":"DQS", dq_num);
 			}
 			printf("\r\n");
-		} else
-			printf("bit leveling failure\r\n");
+			once = 1;
+		}
+		printf("Lane %d  ", lane);
+		for (dq_num = 0; dq_num < 9; dq_num++) {
+			reg_write_phy(PHY_LANE_SEL,
+				(lane * (BITLVL_DLY_WIDTH + 1)) |
+				(dq_num << 8));
+			ip_bitwise_trim =
+				reg_read_phy(IP_DQ_DQS_BITWISE_TRIM);
+			inc  = ((ip_bitwise_trim >> 6) & 0x1);
+			step = ((ip_bitwise_trim >> 0) & 0x3F);
+			printf(" %c%2d  ",
+				(inc ? '+': (step != 0 ? '-': ' ')), step);
+		}
+		printf("\r\n");
 	}
 	printf("\r\n");
 
@@ -238,7 +243,6 @@ void hw_bit_leveling_information(void)
 	dll_ps = (get_period_ps()/analog_dll_lock);
 	once = (get_period_ps() - dll_ps * analog_dll_lock) * 1000 / analog_dll_lock;
 
-	printf("#############################################\r\n");
 	printf("1-Cycle Period(ps): %d, 1-Step Period(ps): %d.%d \r\n",
 		get_period_ps(), dll_ps, once);
 	printf("Lock Value: %d\r\n", analog_dll_lock);
@@ -252,60 +256,77 @@ int hw_bit_leveling(void)
 	reg_write_phy(DISABLE_GATING_FOR_SCL, 0x00000000);
 
 	// @modified martin MPR cal add
-	reg_write_phy(SCL_START, (0x308 << 20));					// Initialize the data by setting wr_only
+	// Initialize the data by setting wr_only
+	reg_write_phy(SCL_START, (0x308 << 20));
 
 	do {
 		status = ((reg_read_phy(SCL_START) >> 28) & 0x1);
 	} while (status);
 
-#ifdef DDR_TEST_MODE
-	reg_write_phy(SCL_DATA_0, 0xFF00FF00);					// Write in the bit leveling data
+	udelay(1000);
+	// Write in the bit leveling data
+	reg_write_phy(SCL_DATA_0, 0xFF00FF00);
 	reg_write_phy(SCL_DATA_1, 0xFF00FF00);
-	reg_write_phy(PHY_SCL_START_ADDR, (0x8 << 16));				// Set the address to start at in the DRAM, Note scl_start_col_addr moves in ddr4
-	reg_write_phy(SCL_START, (0x88 << 21));					// Initialize the data by setting wr_only
+	// Set the address to start at in the DRAM,
+	// Note scl_start_col_addr moves in ddr4
+	reg_write_phy(PHY_SCL_START_ADDR, (0x8 << 16));
+	// Initialize the data by setting wr_only
+	reg_write_phy(SCL_START, (0x88 << 21));
 
 	do {
 		status = ((reg_read_phy(SCL_START) >> 28) & 0x1);
 	} while (status);
 
-	reg_write_phy(SCL_DATA_0, 0x789b3de0);					// Assume that bit-leveling has used these
-	reg_write_phy(SCL_DATA_1, 0xf10e4a56);					// registers so re-write the scl data
-	reg_write_phy(PHY_SCL_START_ADDR, (0x0 << 16));				// Set the address for scl start
-	reg_write_phy(SCL_START, (0x305 << 20));				// Set bit leveling normal from DRAM with write side
-     // reg_write_phy(SCL_START, (0x105 << 20));				// Set bit leveling normal from DRAM with write side
+	// Set the address for scl start
+	reg_write_phy(PHY_SCL_START_ADDR, (0x0 << 16));
+	// Set bit leveling normal from DRAM with write side
+//	reg_write_phy(SCL_START, (0x105 << 20));
+	reg_write_phy(SCL_START, (0x305 << 20));
 	reg_read_phy(SCL_START);
 
 	do {
 		status = ((reg_read_phy(SCL_START) >> 28) & 0x1);
 	} while (status);
 
-#endif
-	reg_read_phy(DYNAMIC_WRITE_BIT_LVL);					// Todo WR_BIT_LVL fail check with reg_value
+	// Todo WR_BIT_LVL fail check with reg_value
+	reg_read_phy(DYNAMIC_WRITE_BIT_LVL);
 
+	/* step xx. set the dynamic bit-leveling (write/read) */
 	reg_write_phy(DISABLE_GATING_FOR_SCL, 0x00000001);
+	/* step xx. display the bit-leveling information */
+//	hw_bit_leveling_information(0);
 
-	reg_write_phy(SCL_MAIN_CLK_DELTA, 0x00000010);				// Clear main clock delta register before doing SCL write-read test
-	reg_write_phy(SCL_DATA_0, 0x789b3de0);					// Assume that bit-leveling has used these
-	reg_write_phy(SCL_DATA_1, 0xf10e4a56);					// registers so re-write the scl data
-	reg_write_phy(SCL_START, 1 << 28 | 1 << 24);				// Set wr_only bit to initialize memory data
+	// Clear main clock delta register before doing SCL write-read test
+//	reg_write_phy(SCL_MAIN_CLK_DELTA, 0x00000010);
+
+	/* Assume that bit-leveling has used these
+	 * registers so re-write the scl data
+	 */
+	reg_write_phy(SCL_DATA_0, 0x789b3de0);
+	reg_write_phy(SCL_DATA_1, 0xf10e4a56);
+	// Set wr_only bit to initialize memory data
+	reg_write_phy(SCL_START, 1 << 28 | 1 << 24);
 
 	do {
 		status = ((reg_read_phy(SCL_START) >> 28) & 0x1);
 	} while (status);
 
-	/* Call SCL without write-leveling save restore data(set [31] high for save/restore) */
-	reg_write_phy(SCL_START, (1 << 29) |					//continuous_rds
-				 (1 << 28) |					//set_ddr_scl_go_done
-				 (1 << 26));					//incr_scl
+	/* Call SCL without write-leveling save restore data
+	 * (set [31] high for save/restore) */
+	// Clear main clock delta register before doing SCL write-read test
+	reg_write_phy(SCL_MAIN_CLK_DELTA, 0x00000010);
+	reg_write_phy(SCL_START, (1 << 29) |		//continuous_rds
+				 (1 << 28) |		//set_ddr_scl_go_done
+				 (1 << 26));		//incr_scl
 	do {
 		status = ((reg_read_phy(SCL_START) >> 28) & 0x1);
 	} while (status);
 
 	/* step xx. display the bit-leveling information */
-	hw_bit_leveling_information();
+	hw_bit_leveling_information(1);
 
 	/* step xx. set the dynamic bit-leveling (write/read) */
-	reg_write_phy(DISABLE_GATING_FOR_SCL, 0x00000001);
+//	reg_write_phy(DISABLE_GATING_FOR_SCL, 0x00000001);
 	mmio_clear_32(DPHY_BASE_ADDR + DYNAMIC_WRITE_BIT_LVL, (1 << 0));
 	mmio_set_32(DPHY_BASE_ADDR + DYNAMIC_BIT_LVL, (1 << 0));
 
@@ -315,18 +336,20 @@ int hw_bit_leveling(void)
 void phy_set_init_values (void)
 {
 /*
-  * NOTE: For write side bit leveling the state machine wait counters are critically dependent on
-  * the speed grade of the memory used and the speed grade support set in the addr phy. Therefore we
-  * adjust the latencies to be programmed based on what has been selected for the phy, below.
+  * NOTE: For write side bit leveling the state machine wait counters are
+  * critically dependent on the speed grade of the memory used and
+  * the speed grade support set in the addr phy. Therefore we adjust
+  * the latencies to be programmed based on what has been selected
+  * for the phy, below.
   */
   	float one_ns = 1000000000;
 	int dram_clk_period = (one_ns/get_pll_freq(3))*1000;//1250;	[DEBUG]
 
 	int CMD_TO_DDR = (SWAP_PHASE ? 1 : 2);
 
-	int PHY_BL = 2;								// BL used in the PHY
+	int PHY_BL = 2;				// BL used in the PHY
 
-	int READ_TO_WRITE = (6 >> 1) + 2 + 2;					// 6 refers to tCCD_MAX in DDR4
+	int READ_TO_WRITE = (6 >> 1) + 2 + 2;	// 6 refers to tCCD_MAX in DDR4
 	int WRITE_TO_READ = (0xD + 2);
 
 	int RL = g_nsih->dii.ac_timing.RL, WL = g_nsih->dii.ac_timing.WL;
@@ -336,18 +359,24 @@ void phy_set_init_values (void)
 	int TRUE_RL = (int)true_rl_d, TRUE_WL = (int)true_wl_d;
 
 
-	// Read to Write  2nd Write burst in ddr4 Write to Read	2 Reads bit-lvl st mc evaluate
+	// Read to Write  2nd Write burst in ddr4 Write to Read	2
+	// Reads bit-lvl st mc evaluate
 	int TRIM_LAT = READ_TO_WRITE + 1 + TRUE_RL - TRUE_WL
 	#if defined(DDR4)
 			+ PHY_BL
 	#endif
 			+ WRITE_TO_READ + 1 + PHY_BL * 2 - 2;
-	// Read to Write, 2nd Write burst in ddr4 Write to Read, 2 Reads, Half of 3rd read, Int-cmd to DDR time
-	int READ_LAT = READ_TO_WRITE + 1 + TRUE_RL - TRUE_WL			// cmd to data avail, d1->d3 rd_side_done, start signal A->D tim, switch state Rd->Wr
+	// Read to Write, 2nd Write burst in ddr4 Write to Read, 2 Reads,
+	// Half of 3rd read, Int-cmd to DDR time
+	// cmd to data avail, d1->d3 rd_side_done,
+	// start signal A->D tim, switch state Rd->Wr
+	int READ_LAT = READ_TO_WRITE + 1 + TRUE_RL - TRUE_WL
 	#if defined(DDR4)
 			+ PHY_BL
 	#endif
-			+ WRITE_TO_READ + 1 + PHY_BL * 2 + PHY_BL/2 + CMD_TO_DDR// cmd to data avail, d1->d3 rd_side_done, start signal A->D tim, switch state Rd->
+			/* cmd to data avail, d1->d3 rd_side_done,
+			 * start signal A->D tim, switch state Rd-> */
+			+ WRITE_TO_READ + 1 + PHY_BL * 2 + PHY_BL/2 + CMD_TO_DDR
 			+ TRUE_RL - 2 - UNIQUIFY_NUM_STAGES_A2D + 1;
 	int DLY_DFI_WRDATA = (((WL % 2 == 0) ? 1 : 0) ^ SWAP_PHASE);
 
@@ -393,10 +422,28 @@ void phy_set_init_values (void)
 		     (0x1 << 28) |						// receiver_en [28]
 		     (PREAMBLE_DLY << 29));					// preamble_dly [30:29]
 #else
-	reg_value = ((0x1 <<  0)  |						// odt_sel [0]
-		     (0x1 <<  1)  |						// odt_en  [1]
-		     (g_nsih->phy_dsinfo.io_mode <<  2) |			// io_mode [2]
-		     (g_nsih->phy_dsinfo.dq_dqs_drive <<  4)  |			// dq_dqs_drive [7:4]
+//	reg_value = ((0x1 <<  0)  |						// odt_sel [0]
+//		     (0x1 <<  1)  |						// odt_en  [1]
+//		     (g_nsih->phy_dsinfo.io_mode <<  2) |			// io_mode [2]
+//		     (g_nsih->phy_dsinfo.dq_dqs_drive <<  4)  |			// dq_dqs_drive [7:4]
+//		     (0x0 <<  8)  |						// extra_oen_clk [8]
+////		     (0x0 <<  9)  |						// no_external_dll, legacy [9]
+//		     (0x1 << 10) |						// dynamic_receiver_en [10]
+//		     (0x0 << 11) |						// reduce_cmd_latency [11]
+//		     (HALF_RATE_MODE << 14) |					// half_rate (read-only) [14]
+////		     (DDR1P2 << 15) |						// ddr1p2 (lpddr2/3/4) [15]
+//		     (g_nsih->phy_dsinfo.adrctl_drive << 16) |			// adrctrl_drive [19:16]
+//		     (g_nsih->phy_dsinfo.clk_drive    << 20) |			// clk_drive [23:20]
+//		     (0x1 << 28) |						// receiver_en [28]
+//		     (PREAMBLE_DLY << 29));					// preamble_dly [30:29]
+	//reg_value = ((0x6 <<  0)  |						// odt_sel [0]
+	//	     (8 <<  4)  |			// dq_dqs_drive [7:4]
+	//unsigned int AP_DS = 0xc;
+	unsigned int AP_DS = 0x8;
+	unsigned int AP_ODT = 0x4;
+	reg_value = ((AP_ODT<<  0)  |						// odt_sel [0]
+		     (AP_DS <<  4)  |			// dq_dqs_drive [7:4]
+//		     (0xf <<  4)  |			// dq_dqs_drive [7:4]
 		     (0x0 <<  8)  |						// extra_oen_clk [8]
 //		     (0x0 <<  9)  |						// no_external_dll, legacy [9]
 		     (0x1 << 10) |						// dynamic_receiver_en [10]
@@ -409,6 +456,8 @@ void phy_set_init_values (void)
 		     (PREAMBLE_DLY << 29));					// preamble_dly [30:29]
 #endif
 //	reg_value = 0x50ff44f3;							// [DEBUG]
+//	printf("[info] %x ddr phy pad drive : %x odt : %x \r\n",
+//			reg_value, ((reg_value>>4)&0xF), (reg_value&0xF));
 	reg_write_phy(PHY_PAD_CTRL, reg_value);
 
 	/* Step XX. Set the VREF_TRAINING */
