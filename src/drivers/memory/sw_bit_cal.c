@@ -23,6 +23,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <printf.h>
+#include <chip.h>
+#include <alive.h>
 #include <libnx.h>
 #include "dphy.h"
 #include "dctrl.h"
@@ -38,6 +40,23 @@ void burstwrite4(u32 *dst, u32 *buf);
 
 extern union DDR3_SDRAM_MR MR0, MR1, MR2, MR3;
 
+void save_cal_data(int dnum, unsigned int offset, int rw)
+{
+	struct nx_vddpwr_reg *pvddpwr =
+		(struct nx_vddpwr_reg *)PHY_BASEADDR_VDDPWR;
+	const unsigned int scratch_offset = 7;
+	unsigned int rv, sb = (dnum >> 2) + rw * 4 + scratch_offset;
+
+	if (dnum & 3) {
+		rv = pvddpwr->new_scratch[sb];
+//		rv &= ~(0xff << (8 * (dnum & 3)));
+	} else
+		rv = 0;
+
+	rv |= offset << (8 * (dnum & 3));
+	pvddpwr->new_scratch[sb] = rv;
+//	printf("%d:%08x\r\n", sb, pvddpwr->new_scratch[sb]);
+}
 #if 0
 static void reg_write_phy(int addr, unsigned int reg_value)
 {
@@ -297,7 +316,7 @@ void setreadds(unsigned int rds)
 	union DDR3_SDRAM_MR opcode;
 	opcode.REG = MR1.REG;
 	opcode.REG &= ~(1 << 1 | 1 << 5);
-	opcode.REG =
+	opcode.REG |=
 		(rds & 1 << 0) << 1 |		// 1: ODS0
 		(rds & 1 << 1) << 4;		// 5: ODS1
 
@@ -319,7 +338,7 @@ void setwriteodtn(unsigned int wodtn)
 	union DDR3_SDRAM_MR opcode;
 	opcode.REG = MR1.REG;
 	opcode.REG &= ~(1 << 2 | 1 << 6 | 1 << 9);
-	opcode.REG =
+	opcode.REG |=
 		(wodtn & 1 << 0) << 2 |		// 2: RTT_Nom0
 		(wodtn & 1 << 1) << 5 |		// 6: RTT_Nom1
 		(wodtn & 1 << 2) << 7;		// 9: RTT_Nom2
@@ -335,7 +354,7 @@ void setwriteodtw(unsigned int wodtw)
 	union DDR3_SDRAM_MR opcode;
 	opcode.REG = MR2.REG;
 	opcode.REG &= ~(3 << 9);
-	opcode.REG = (wodtw & 0x3) << 9;	// 9: RTT_WR
+	opcode.REG |= (wodtw & 0x3) << 9;	// 9: RTT_WR
 
 	MR2.REG = opcode.REG;
 
@@ -369,8 +388,7 @@ int read_checkresult(unsigned int targetaddr, unsigned int bits,
 {
 	unsigned int buf[8], *tp;
 	tp = testpattern;
-	while(1)
-	{
+	while (1) {
 		burstread8((unsigned int *)targetaddr, buf);
 		if (!checkpattern(tp, buf, 0xffffffff))
 			return 1;
@@ -381,9 +399,10 @@ int read_checkresult(unsigned int targetaddr, unsigned int bits,
 int findbest(unsigned char dd[], int cnt)
 {
 	int best = 0, i, bi = 0;
-	if (cnt == 0) {
+
+	if (cnt == 0)
 		return 0xff;
-	}
+
 	for (i = 0; i < cnt; i++) {
 		int cd = dd[i * 2 + 1] - dd[i * 2 + 0] + 1;
 		if (cd < 3)
@@ -393,16 +412,17 @@ int findbest(unsigned char dd[], int cnt)
 			bi = i;
 		}
 	}
-	if (best == 0) {
+
+	if (best == 0)
 		return 0xff;
-	}
+
 	return bi;
 }
 
 int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 {
 	unsigned int lane, i;
-	int cm[32];
+	unsigned char cm[32];
 	unsigned char lr[20];
 
 	if (option & 1 << 0) {
@@ -427,7 +447,7 @@ int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 			for (offset = 0; offset < 127; offset++) {
 				settrim(lane, line, offset, WRITETRIM);
 				result = checkresult(targetaddr, lane * 8 + line,
-						1, WRITETRIM);
+						4, WRITETRIM);
 
 				if (result) {
 					if (prev == 0)
@@ -457,7 +477,7 @@ int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 
 			/* escalate left side test precision */
 			offset = lr[lrc * 2 + 0];
-			int limit = lr[lrc * 2 + 1];
+			unsigned int limit = lr[lrc * 2 + 1];
 			do {
 				settrim(lane, line, offset, WRITETRIM);
 				result = checkresult(targetaddr, lane * 8 + line,
@@ -498,6 +518,9 @@ int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 		}
 	}
 
+	for (i = 0; i < 16; i++)
+		save_cal_data(i, cm[i * 2 + 0], WRITETRIM);
+
 	if (option & 1 << 1) {
 		for (i = 0; i < 16; i++) {
 			printf("DQ%02d ", i);
@@ -522,9 +545,9 @@ int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 
 int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 {
-#if 0
+#if 1
 	unsigned int lane, i;
-	int cm[32];
+	unsigned char cm[32];
 	unsigned char lr[20];
 
 	if (option & 1 << 0) {
@@ -549,7 +572,7 @@ int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 			for (offset = 0; offset < 127; offset++) {
 				settrim(lane, line, offset, READTRIM);
 				result = checkresult(targetaddr, lane * 8 + line,
-						1, READTRIM);
+						4, READTRIM);
 
 				if (result) {
 					if (prev == 0)
@@ -579,7 +602,7 @@ int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 
 			/* escalate left side test precision */
 			offset = lr[lrc * 2 + 0];
-			int limit = lr[lrc * 2 + 1];
+			unsigned int limit = lr[lrc * 2 + 1];
 			do {
 				settrim(lane, line, offset, READTRIM);
 				result = checkresult(targetaddr, lane * 8 + line,
@@ -621,6 +644,9 @@ int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 		}
 	}
 	MPR(0);
+
+	for (i = 0; i < 16; i++)
+		save_cal_data(i, cm[i * 2 + 0], READTRIM);
 
 	if (option & 1 << 1) {
 		for (i = 0; i < 16; i++) {
@@ -676,10 +702,9 @@ void getdlllockvalue(int cnt)
 	}
 
 	j = 0;
-	while (lockv[j].cnt) {
+	do {
 		printf("%d : %d\r\n", lockv[j].lockv, lockv[j].cnt);
-		j++;
-	}
+	} while (lockv[++j].cnt);
 }
 
 void getimpedance(unsigned int testtargetaddr, unsigned int option, int cs)
@@ -693,13 +718,14 @@ void getimpedance(unsigned int testtargetaddr, unsigned int option, int cs)
 		for (j = 0; j < 2; j++) {
 //			printf("dram ds:%d\r\n", j);
 			setreadds(j);
-			for (k = (cs ? 1 : 0); k < 1 + 2 * (cs ? 1 : 0); k++) {
+			for (k = (cs ? 1 : 0); k < (1 + 2 * (cs ? 1 : 0)); k++) {
 				if (cs) {
 //					printf("dram write dynamic odt:%d\r\n", k);
 					setwriteodtw(k);
 				}
 				cm = get_read_bit_margin(testtargetaddr, option);
-				printf("co:%d, dds:%d, ddo:%d, cm:%d\r\n\n", i, j, k, cm);
+				printf("co:%d, dds:%d, ddo:%d, cm:%d\r\n\n",
+						i, j, k, cm);
 				if (maxm < cm) {
 					maxm = cm;
 					maxi = i;
@@ -711,7 +737,8 @@ void getimpedance(unsigned int testtargetaddr, unsigned int option, int cs)
 	}
 	setreadodt(maxi);
 	setreadds(maxj);
-	setwriteodtw(maxk);
+	if (cs)
+		setwriteodtw(maxk);
 	printf("max impedance odt:%d, ds:%d, odtw:%d, margin:%d\r\n\n\n",
 			maxi, maxj, maxk, maxm);
 
@@ -729,7 +756,8 @@ void getimpedance(unsigned int testtargetaddr, unsigned int option, int cs)
 					setwriteodtw(k);
 				}
 				cm = get_write_bit_margin(testtargetaddr, option);
-				printf("cds:%d, don:%d, ddo:%d, cm:%d\r\n\n", i, j, k, cm);
+				printf("cds:%d, don:%d, ddo:%d, cm:%d\r\n\n",
+						i, j, k, cm);
 				if (maxm < cm) {
 					maxm = cm;
 					maxi = i;
@@ -766,6 +794,57 @@ void trimtest(unsigned int testtargetaddr, unsigned int option)
 		get_write_bit_margin(testtargetaddr, option);
 		printf("write bit cal done\r\n\n");
 	}
+
+//	struct nx_alive_reg *palive = (struct nx_alive_reg *)PHY_BASEADDR_ALIVE;
+//	palive->scratch = 0x4d656d43;	/* MemC */
+	struct nx_vddpwr_reg *pvddpwr =
+		(struct nx_vddpwr_reg *)PHY_BASEADDR_VDDPWR;
+	pvddpwr->new_scratch[6] = 0x4d656d43;   /* MemC */
+//	printf("mem cal save marking\r\n");
+}
+
+void trimset(char readcal[], char writecal[])
+{
+	int i;
+
+//	settrim(0, 8, 32, READTRIM);	/* DM */
+//	settrim(1, 8, 32, READTRIM);
+//	printf("read cal:\r\n");
+	for (i = 0; i < 16; i++) {
+		settrim(i >> 3, i & 0x7, readcal[i], READTRIM);
+//		printf("%02d ", readcal[i] - 63);
+	}
+
+//	settrim(0, 8, 59, WRITETRIM);	/* DM */
+//	settrim(0, 9, 32, WRITETRIM);	/* DQS */
+//	settrim(1, 8, 59, WRITETRIM);
+//	settrim(1, 9, 32, WRITETRIM);
+//	printf("\r\nwrite cal:\r\n");
+	for (i = 0; i < 16; i++) {
+		settrim(i >> 3, i & 0x7, writecal[i], WRITETRIM);
+//		printf("%02d ", writecal[i] - 63);
+	}
+//	printf("\r\n\n");
+}
+
+int checkcaldata(char readcal[], char writecal[])
+{
+	int i, sum = 0;
+
+	for (i = 0; i < 16; i++) {
+		sum += readcal[i];
+	}
+	if (sum == 0)
+		return 0;
+
+	sum = 0;
+	for (i = 0; i < 16; i++) {
+		sum += writecal[i];
+	}
+	if (sum == 0)
+		return 0;
+
+	return 1;
 }
 
 #ifdef DDR_TEST_MODE

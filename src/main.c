@@ -73,6 +73,7 @@ void vddpwron_ddr_on(void)
 	} while (reg_value != 1);
 }
 
+void build_information(void);
 void main(void)
 {
 	int serial_ch = g_nsih->serial_ch;
@@ -92,6 +93,8 @@ void main(void)
 	clock_initialize();
 
 	serial_init(serial_ch);
+
+	build_information();
 
 	memory_initialize(is_resume);
 
