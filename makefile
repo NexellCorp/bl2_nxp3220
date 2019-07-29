@@ -9,9 +9,11 @@ LDFLAGS		=	-Bstatic												\
 				-Wl,--build-id=none										\
 				-nostdlib
 
-SYS_OBJS	+=	startup.o libnx.o libarmv7.o libplat.o armv7_pmu.o delay.o pll.o cmu.o clock.o serial.o printf.o	\
-				dctrl.o dphy.o ${MEMTYPE}_sdram.o memory.o libmem_rw.o sw_bit_cal.o pmu.o gpio.o i2c_gpio.o asv.o 	\
-				pmic.o board_${BOARD}.o smc_entry.o efuse.o tz.o plat_load.o build_info.o main.o
+SYS_OBJS	+=	startup.o libnx.o libarmv7.o libplat.o armv7_pmu.o delay.o	\
+				pll.o cmu.o clock.o serial.o printf.o dctrl.o dphy.o	\
+				${MEMTYPE}_sdram.o memory.o libmem_rw.o sw_bit_cal.o pmu.o	\
+				gpio.o i2c_gpio.o asv.o pmic.o board_${BOARD}.o smc_entry.o	\
+				efuse.o tz.o plat_load.o build_info.o main.o
 
 ifeq ($(MEMTEST), y)
 SYS_OBJS	+=	memtester.o

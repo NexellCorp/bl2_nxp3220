@@ -257,7 +257,7 @@ void mem_init_seq_ddr3 (unsigned int is_resume)
 	  	 * WARNING: 200 us is required before RST_N goes inactive.
 	  	 * Insert software function to wait 200us here.
 	  	 */
-		udelay(200000);
+		udelay(200);
 
 		/* 03. CKE must be LOW 10ns prior to RESET# transitioning HIGH A`lready taken care of. So Deasserting RESET# */
 		reg_set_ctrl(MEM_WIDTH, (1 << 4)|(1 << 1));			// dfi_reset_n
@@ -268,7 +268,7 @@ void mem_init_seq_ddr3 (unsigned int is_resume)
 		 * WARNING: 500 us is required after RST_N goes inactive before CKE goes active.
 		 * Insert software function to wait 500us here..
 		 */
-		udelay(500000);
+		udelay(500);
 
 		/* Step 05. CKE may be brought HIGH and only NOP or DES commands may be issued for tXPR */
 		int tXPR_MAX = (g_nsih->dii.ac_timing.tRFC + 10);

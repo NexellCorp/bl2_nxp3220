@@ -29,9 +29,10 @@
 #include <log.h>
 
 /* cpu one cycle -> period (ps) */
+#if 0
 int g_cycle_period_ps;
 
-unsigned int pmu_get_count (void)
+unsigned int pmu_get_count(void)
 {
 	unsigned int value;
 
@@ -48,13 +49,13 @@ static inline void pmu_counter_initialize (int do_reset, int enable_divider)
 
 	/* Perform Reset */
 	if (do_reset) {
-		value |= 2;     // reset all counters to zero.
-		value |= 4;     // reset cycle counter to zero.
+		value |= 1 << 1;	// reset all counters to zero.
+		value |= 1 << 2;	// reset cycle counter to zero.
 	}
 
 	if (enable_divider)
-		value |= 8;     // enable "by 64" divider for CCNT.
-	value |= 16;
+		value |= 1 << 3;	// enable "by 64" divider for CCNT.
+	value |= 1 << 4;
 
 	/* program the performance-counter control-register: (PMCR) */
 	__asm__ __volatile__ ("MCR p15, 0, %0, c9, c12, 0\t\r\n" :: "r"(value));
@@ -79,13 +80,13 @@ void pmu_counter_deinitialize (int do_reset, int enable_divider)
 
 	/* Perform Reset */
 	if (do_reset) {
-		value |= 2;     // reset all counters to zero.
-		value |= 4;     // reset cycle counter to zero.
+		value |= 1 << 1;	// reset all counters to zero.
+		value |= 1 << 2;	// reset cycle counter to zero.
 	}
 
 	if (enable_divider)
-		value |= 8;     // enable "by 64" divider for CCNT.
-	value |= 16;
+		value |= 1 << 3;	// enable "by 64" divider for CCNT.
+	value |= 1 << 4;
 
 	/* program the performance-counter control-register: */
 	__asm__ __volatile__ ("MCR p15, 0, %0, c9, c12, 0\t\r\n" :: "r"(0));
@@ -113,7 +114,7 @@ void pmu_delay_us(volatile unsigned int us)
 		count = pmu_get_count();
 		cycle = (count- overhead);
 		if (cycle >= 1000000) {
-			pmu_us += (g_cycle_period_ps * cycle/1000)/1000;
+			pmu_us += (g_cycle_period_ps * cycle / 1000) / 1000;
 			overhead = count;
 		}
 	} while (pmu_us < us);
@@ -127,10 +128,11 @@ void pmu_delay_us(volatile unsigned int us)
 void armv7_pmu_init(void)
 {
 	/* step xx. Calcurate the CPU One Cycle -> Period(ps)  */
-	g_cycle_period_ps = (1000000/(get_pll_freq(PLLCPU)/1000000));
+	g_cycle_period_ps = (1000000 / (get_pll_freq(PLLCPU) / 1000000));
 
 	/* step xx. performance management unit initialize */
 	pmu_counter_initialize(1, 0);
 
 	return;
 }
+#endif

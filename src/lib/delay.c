@@ -25,7 +25,8 @@
 #include <delay.h>
 #include <armv7_pmu.h>
 
-void udelay(volatile unsigned int us)
+#if 0
+void udelay(unsigned int us)
 {
 #if 1
 	pmu_delay_us(us);
@@ -36,8 +37,42 @@ void udelay(volatile unsigned int us)
 		for (j = 0; j < 0x100; j++);
 #endif
 }
+#else
+#define CNTSPEEDUS      24      /* input clock : 24MHz, 24 clock / us */
+void udelay(unsigned int utime)
+{
+	register unsigned long long ccnt, tcnt = utime * CNTSPEEDUS;
+	unsigned int lsb, msb;
+	unsigned int lsb1, msb1;
+	unsigned int lsb2, msb2;
+	__asm__ __volatile__ ("mrrc p15, 0, %0, %1, c14": "=r"(lsb), "=r"(msb));
+	__asm__ __volatile__ ("mrrc p15, 0, %0, %1, c14": "=r"(lsb1), "=r"(msb1));
+	__asm__ __volatile__ ("mrrc p15, 0, %0, %1, c14": "=r"(lsb2), "=r"(msb2));
+	lsb2 = lsb ^ lsb1 ^ lsb2;
+	if (lsb2 == lsb) {
+		lsb = lsb1;
+		msb = msb1;
+	}
+	ccnt = msb;
+	ccnt = (ccnt << 32) | lsb;
 
-void mdelay(volatile unsigned int ms)
+	tcnt += ccnt;
+	do {
+		__asm__ __volatile__ ("mrrc p15, 0, %0, %1, c14": "=r"(lsb), "=r"(msb));
+		__asm__ __volatile__ ("mrrc p15, 0, %0, %1, c14": "=r"(lsb1), "=r"(msb1));
+		__asm__ __volatile__ ("mrrc p15, 0, %0, %1, c14": "=r"(lsb2), "=r"(msb2));
+		lsb2 = lsb ^ lsb1 ^ lsb2;
+		if (lsb2 == lsb) {
+			lsb = lsb1;
+			msb = msb1;
+		}
+		ccnt = msb;
+		ccnt = (ccnt << 32) | lsb;
+	} while (tcnt > ccnt);
+}
+#endif
+
+void mdelay(unsigned int ms)
 {
 	udelay(ms * 1000);
 }
