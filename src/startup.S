@@ -25,22 +25,21 @@
 #include "include/armv7.h"
 #include "include/nxp3220.h"
 
-        .align
+	.align
 
 /* arm exceptions vectors */
 .global vectors
 vectors:
-        b       reset_handler       						/* 00 - Reset				*/
-        b       .          							/* 04 - Undefined instructions		*/
-        b       .                   						/* 08 - SWI instructions		*/
-        b       .          							/* 0C - Instruction fetch aborts	*/
-        b       .          							/* 10 - Data access aborts		*/
-        b       .                  						/* 14 - Reserved (was address exception)*/
-        b       .                   						/* 18 - IRQ interrupts			*/
-        b       .                   						/* 1C - FIQ interrupts			*/
+	b	reset_handler  	/* 00 - Reset				*/
+	b	.		/* 04 - Undefined instructions		*/
+	b	.		/* 08 - SWI instructions		*/
+	b	.		/* 0C - Instruction fetch aborts	*/
+	b	.		/* 10 - Data access aborts		*/
+	b	.		/* 14 - Reserved (was address exception)*/
+	b	.		/* 18 - IRQ interrupts			*/
+	b	.		/* 1C - FIQ interrupts			*/
 
 reset_handler:
-	/* Change the ARM Mode(Secure->Non-Secure) */
 	msr     CPSR_c, #(MODE_SVC|I_BIT|F_BIT)
 
 	/* Set the BSS-Area to zero. */
@@ -58,10 +57,8 @@ clbss_l:
 set_stack:
 	/* Set Stack-Pointer (svc: 1kbyte) */
 	ldr     sp, =SRAM_BL2_BASEADDR
-        add     sp, sp, #BL2_SRAM_SIZE						/* Add to internal sram size.	*/
-        sub	sp, sp, #0x400							/* Hader + User-Key + Booy Key	*/
-
-	bl	armv7_pmu_init
+        add     sp, sp, #BL2_SRAM_SIZE	/* Add to internal sram size.	*/
+        sub	sp, sp, #0x400		/* Header + User-Key + Boot-Key + Sign */
 
 	bl	main
 	b	.

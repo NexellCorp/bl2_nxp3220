@@ -84,25 +84,30 @@ int memory_initialize(unsigned int is_resume)
 #elif defined(DDR4)
 	ret = ddr4_initialize(is_resume);
 #endif
-	NOTICE("Memory Initialize %s! (%d:%d) \r\n\n",
+
+	NOTICE("Memory Initialize %s! (%d:%d) \r\n",
 			(ret >= 0) ? "Done" : "Failed", ret, is_resume);
 
 	/* @brief: auto write-leveling  */
-	if ((g_nsih->cal_mode >> 2) & 0x1)
+	if (g_nsih->cal_mode & 1 << 2)
 		hw_write_leveling();
 
 	/* @brief: auto bit-leveling */
-	if ((g_nsih->cal_mode >> 0) & 0x1)
+	if (g_nsih->cal_mode & 1 << 0)
 		hw_bit_leveling();
 
 	/* @brief: "libddr.a" in manual bit-leveling */
-	if ((g_nsih->cal_mode >> 1) & 0x1) {
-		trimtest(0x40000000,
-				(1 << 0) |					/* Bit Cal state	*/
-				(1 << 1) |					/* Center, Margin value */
-				(1 << 2) |					/* Lock Value		*/
-				(0 << 3) |					/* Read Cal enable	*/
-				(1 << 4));					/* Write Cal enable	*/
+	if (g_nsih->cal_mode & 1 << 1) {
+		if (checkcaldata(g_nsih->readcal, g_nsih->writecal))
+			trimset(g_nsih->readcal, g_nsih->writecal);
+		else
+			trimtest(0x40000000,
+				(1 << 0) |	/* Bit Cal state	*/
+				(1 << 1) |	/* Center, Margin value */
+				(1 << 2) |	/* Lock Value		*/
+				(1 << 3) |	/* Read Cal enable	*/
+				(1 << 4) |	/* Write Cal enable	*/
+				(0 << 5));	/* r/w impedence test	*/
 	}
 
 #ifdef DDR_TEST_MODE
