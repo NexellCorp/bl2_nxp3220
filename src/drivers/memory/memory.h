@@ -33,6 +33,6 @@ extern void exit_self_refresh(void);
  int memory_initialize(unsigned int is_resume);
 
 /* "libddr.a" in function */
-void trimtest(unsigned int testtargetaddr, unsigned int option);
+int trimtest(unsigned int testtargetaddr, unsigned int option);
 
 #endif // #ifndef _MEMORY_H__
