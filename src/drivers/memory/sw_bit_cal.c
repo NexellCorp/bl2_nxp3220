@@ -475,9 +475,13 @@ int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 				continue;
 			}
 
+			unsigned int center, margin;
 			/* escalate left side test precision */
-			offset = lr[lrc * 2 + 0];
-			unsigned int limit = lr[lrc * 2 + 1];
+//			offset = lr[lrc * 2 + 0];
+			right = offset = lr[lrc * 2 + 0];
+//			unsigned int limit = lr[lrc * 2 + 1];
+			left = lr[lrc * 2 + 1];
+			center = right - ((right - left) >> 1);
 			do {
 				settrim(lane, line, offset, WRITETRIM);
 				result = checkresult(targetaddr, lane * 8 + line,
@@ -486,12 +490,12 @@ int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 				if (result)
 					break;
 				offset++;
-			} while (offset < limit);
+			} while (offset < center);
 			left = offset;
 
 			/* escalate right side test precision */
 			offset = lr[lrc * 2 + 1];
-			limit = lr[lrc * 2 + 0];
+//			limit = lr[lrc * 2 + 0];
 			do {
 				int result;
 				settrim(lane, line, offset, WRITETRIM);
@@ -501,10 +505,9 @@ int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 				if (result)
 					break;
 				offset--;
-			} while (offset > limit);
+			} while (offset > center);
 			right = offset;
 
-			int center, margin;
 			center = right - ((right - left) >> 1);
 			if (right - left <= 0) {
 				center = 63;
@@ -600,9 +603,13 @@ int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 				continue;
 			}
 
+			unsigned int center, margin;
 			/* escalate left side test precision */
-			offset = lr[lrc * 2 + 0];
-			unsigned int limit = lr[lrc * 2 + 1];
+//			offset = lr[lrc * 2 + 0];
+			right = offset = lr[lrc * 2 + 0];
+//			unsigned int limit = lr[lrc * 2 + 1];
+			left = lr[lrc * 2 + 1];
+			center = right - ((right - left) >> 1);
 			do {
 				settrim(lane, line, offset, READTRIM);
 				result = checkresult(targetaddr, lane * 8 + line,
@@ -611,12 +618,12 @@ int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 				if (result)
 					break;
 				offset++;
-			} while (offset < limit);
+			} while (offset < center);
 			left = offset;
 
 			/* escalate right side test precision */
 			offset = lr[lrc * 2 + 1];
-			limit = lr[lrc * 2 + 0];
+//			limit = lr[lrc * 2 + 0];
 			do {
 				int result;
 				settrim(lane, line, offset, READTRIM);
@@ -626,11 +633,10 @@ int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 				if (result)
 					break;
 				offset--;
-			} while (offset > limit);
+			} while (offset > center);
 			right = offset;
 
 
-			unsigned int center, margin;
 			center = right - ((right - left) >> 1);
 			if (right - left <= 0) {
 				center = 63;
@@ -775,8 +781,9 @@ void getimpedance(unsigned int testtargetaddr, unsigned int option, int cs)
 		setwriteodtw(maxk);
 }
 
-void trimtest(unsigned int testtargetaddr, unsigned int option)
+int trimtest(unsigned int testtargetaddr, unsigned int option)
 {
+	int ret = 1;
 	if (option & 1 << 2)
 		getdlllockvalue(100000);
 
@@ -786,12 +793,12 @@ void trimtest(unsigned int testtargetaddr, unsigned int option)
 	printf("phy ver:%x\r\n", *(unsigned int *)0x230911B0);
 
 	if (option & 1 << 3) {
-		get_read_bit_margin(testtargetaddr, option);
+		ret = get_read_bit_margin(testtargetaddr, option);
 		printf("read bit cal done\r\n");
 	}
 
 	if (option & 1 << 4) {
-		get_write_bit_margin(testtargetaddr, option);
+		ret = get_write_bit_margin(testtargetaddr, option);
 		printf("write bit cal done\r\n\n");
 	}
 
@@ -801,6 +808,7 @@ void trimtest(unsigned int testtargetaddr, unsigned int option)
 		(struct nx_vddpwr_reg *)PHY_BASEADDR_VDDPWR;
 	pvddpwr->new_scratch[6] = 0x4d656d43;   /* MemC */
 //	printf("mem cal save marking\r\n");
+	return ret;
 }
 
 void trimset(char readcal[], char writecal[])
@@ -825,6 +833,9 @@ void trimset(char readcal[], char writecal[])
 //		printf("%02d ", writecal[i] - 63);
 	}
 //	printf("\r\n\n");
+	struct nx_vddpwr_reg *pvddpwr =
+		(struct nx_vddpwr_reg *)PHY_BASEADDR_VDDPWR;
+	pvddpwr->new_scratch[6] = 0;   /* clear marking */
 }
 
 int checkcaldata(char readcal[], char writecal[])

@@ -76,7 +76,7 @@ void vddpwron_ddr_on(void)
 void build_information(void);
 void main(void)
 {
-	int serial_ch = g_nsih->serial_ch;
+	int ret, serial_ch = g_nsih->serial_ch;
 	unsigned int is_resume;
 
 	is_resume = check_suspend_state();
@@ -96,9 +96,14 @@ void main(void)
 
 	build_information();
 
-	memory_initialize(is_resume);
+	ret = memory_initialize(is_resume);
 
 	clock_information();
 
-	plat_load();
+	if (ret)
+		plat_load();
+	else {
+		printf("ddr mem set error. system halt!!!!\r\n");
+		while (1);
+	}
 }

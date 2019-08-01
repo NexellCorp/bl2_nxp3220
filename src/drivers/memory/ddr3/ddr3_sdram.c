@@ -431,7 +431,7 @@ void t_corner_override(unsigned int override)
  *************************************************************/
 int  ddr3_initialize (unsigned int is_resume)
 {
-	int ret = 0;
+	int ret = 1;
 
 	if (is_resume != TRUE) {
 		/* At cold-boot, set 'PAD_RETEN_N' = 1 at this stage. */
