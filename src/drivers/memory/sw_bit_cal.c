@@ -40,7 +40,7 @@ void burstwrite4(u32 *dst, u32 *buf);
 
 extern union DDR3_SDRAM_MR MR0, MR1, MR2, MR3;
 
-void save_cal_data(int dnum, unsigned int offset, int rw)
+static void save_cal_data(int dnum, unsigned int offset, int rw)
 {
 	struct nx_vddpwr_reg *pvddpwr =
 		(struct nx_vddpwr_reg *)PHY_BASEADDR_VDDPWR;
@@ -79,7 +79,7 @@ static unsigned int reg_read_ctrl(int addr)
 
 #define READTRIM	0
 #define WRITETRIM	1
-void settrim(u32 lane, u32 line, u32 offset, int rw)
+static void settrim(u32 lane, u32 line, u32 offset, int rw)
 {
 	u32 sign, reg;
 	if (rw == READTRIM)
@@ -104,7 +104,7 @@ void settrim(u32 lane, u32 line, u32 offset, int rw)
 		(offset & 0x3F) << 0);
 }
 
-void dmc_host_cmd(
+static void dmc_host_cmd(
 		unsigned int offset,	// command number
 		unsigned int cmd_1st,	// 1st cycle command
 		unsigned int cmd_2nd,	// 2nd cycle command
@@ -131,7 +131,7 @@ void dmc_host_cmd(
 	reg_write_ctrl(0xC0 + (offset * 4), mem_cmd1);
 }
 
-void dmc_host_cmd_mr(
+static void dmc_host_cmd_mr(
 		unsigned int offset,	// command number
 		unsigned int cmd_1st,	// 1st cycle command
 		unsigned int cmd_2nd,	// 2nd cycle command
@@ -166,7 +166,7 @@ void dmc_host_cmd_mr(
 #define SRE	(1 << 11 | 0 << 10 | 0 << 9 | 0x00 << 1 | 0 << 0)
 #define SRX	(1 << 11 | 1 << 10 | 1 << 9 | 0x00 << 1 | 1 << 0)
 
-void MPR(int onoff)
+static void MPR(int onoff)
 {
 	unsigned int cmd_1st, cmd_2nd;
 
@@ -210,7 +210,7 @@ void MPR(int onoff)
 	} while (rdata & 1 << 4);
 }
 
-unsigned int testpattern[8] = {
+static unsigned int testpattern[8] = {
 #if 1
 	0xffff0000, 0xffff0000,
 	0xffff0000, 0xffff0000,
@@ -224,14 +224,14 @@ unsigned int testpattern[8] = {
 #endif
 };
 
-const unsigned int wtp[8] = {
+static const unsigned int wtp[8] = {
 	0x789b3de0, 0xf10e4a56,
 	0xc6a21359, 0x427a9bef,
 	0x29a17c9d, 0x02eb36fa,
 	0x1b0f36c8, 0xf10e4a56
 };
 
-int checkpattern(unsigned int *src, unsigned int *target, unsigned int mask)
+static int checkpattern(unsigned int *src, unsigned int *target, unsigned int mask)
 {
 	int i;
 	for (i = 0; i < 8; i++) {
@@ -273,21 +273,21 @@ static int memtest_checkpattern(unsigned int *src, unsigned int *target,
 }
 #endif
 
-#if 1
+#if 0
 /* 60 120 240 240 */
 /* 0001, 0010:240, 0100, 0011:120, 0110, 0101:80, 1000, 0111:60
  * 1001, 1010:48, 1100, 1011:40, 1110, 1101:34, 1111:30
  *
  * 1:240, 3:120, 5:80, 7:60, 9:48, 11:40, 13:34, 15:30
  */
-void setreadodt(unsigned int rodt)
+static void setreadodt(unsigned int rodt)
 {
 	unsigned int reg_value = reg_read_phy(PHY_PAD_CTRL);
 	reg_value = (reg_value & ~(0xFUL << 0)) | (((rodt << 1) + 1) & 0xF) << 0;
 	reg_write_phy(PHY_PAD_CTRL, reg_value);
 }
 
-void ddr3mrs(SDRAM_MODE_REG MRx, union DDR3_SDRAM_MR opcode)
+static void ddr3mrs(SDRAM_MODE_REG MRx, union DDR3_SDRAM_MR opcode)
 {
 	unsigned int cmd_1st, cmd_2nd, rdata;
 
@@ -311,7 +311,7 @@ void ddr3mrs(SDRAM_MODE_REG MRx, union DDR3_SDRAM_MR opcode)
 }
 
 /* 0: RZQ/6, 1: RZQ/7, 2, 3: revd */
-void setreadds(unsigned int rds)
+static void setreadds(unsigned int rds)
 {
 	union DDR3_SDRAM_MR opcode;
 	opcode.REG = MR1.REG;
@@ -325,7 +325,7 @@ void setreadds(unsigned int rds)
 	ddr3mrs(SDRAM_MODE_REG_MR1, opcode);
 }
 
-void setwriteds(unsigned int wds)
+static void setwriteds(unsigned int wds)
 {
 	unsigned int reg_value = reg_read_phy(PHY_PAD_CTRL);
 	reg_value = (reg_value & ~(0xFUL << 4)) | (((wds << 1) + 1) & 0xF) << 4;
@@ -333,7 +333,7 @@ void setwriteds(unsigned int wds)
 }
 
 /* 0: disable, 1: RZQ/4, 2: RZQ/2, 3: RZQ/6, 4: RZQ/12, 5: RZQ/8, 6, 7: revd */
-void setwriteodtn(unsigned int wodtn)
+static void setwriteodtn(unsigned int wodtn)
 {
 	union DDR3_SDRAM_MR opcode;
 	opcode.REG = MR1.REG;
@@ -349,7 +349,7 @@ void setwriteodtn(unsigned int wodtn)
 }
 
 /* 0: disable, 1: RZQ/4(60ohm), 2: RZQ/2(120ohm), 3: revd */
-void setwriteodtw(unsigned int wodtw)
+static void setwriteodtw(unsigned int wodtw)
 {
 	union DDR3_SDRAM_MR opcode;
 	opcode.REG = MR2.REG;
@@ -363,7 +363,7 @@ void setwriteodtw(unsigned int wodtw)
 #endif
 
 #define RETRYCNT	(64 * 1)
-int checkresult(unsigned int targetaddr, unsigned int bits,
+static int checkresult(unsigned int targetaddr, unsigned int bits,
 		int trycnt, int rw)
 {
 	unsigned int buf[8], *tp;
@@ -383,7 +383,7 @@ int checkresult(unsigned int targetaddr, unsigned int bits,
 }
 
 #ifdef DDR_TEST_MODE
-int read_checkresult(unsigned int targetaddr, unsigned int bits,
+static int read_checkresult(unsigned int targetaddr, unsigned int bits,
 		int trycnt)
 {
 	unsigned int buf[8], *tp;
@@ -396,7 +396,7 @@ int read_checkresult(unsigned int targetaddr, unsigned int bits,
 }
 #endif
 
-int findbest(unsigned char dd[], int cnt)
+static int findbest(unsigned char dd[], int cnt)
 {
 	int best = 0, i, bi = 0;
 
@@ -419,11 +419,11 @@ int findbest(unsigned char dd[], int cnt)
 	return bi;
 }
 
-int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
+static int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 {
 	unsigned int lane, i;
 	unsigned char cm[32];
-	unsigned char lr[20];
+	unsigned char lr[40];
 
 	if (option & 1 << 0) {
 		for (i = 63; i > 0; i--)
@@ -475,9 +475,13 @@ int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 				continue;
 			}
 
+			unsigned int center, margin;
 			/* escalate left side test precision */
-			offset = lr[lrc * 2 + 0];
-			unsigned int limit = lr[lrc * 2 + 1];
+//			offset = lr[lrc * 2 + 0];
+			left = offset = lr[lrc * 2 + 0];
+//			unsigned int limit = lr[lrc * 2 + 1];
+			right = lr[lrc * 2 + 1];
+			center = right - ((right - left) >> 1);
 			do {
 				settrim(lane, line, offset, WRITETRIM);
 				result = checkresult(targetaddr, lane * 8 + line,
@@ -486,12 +490,12 @@ int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 				if (result)
 					break;
 				offset++;
-			} while (offset < limit);
+			} while (offset < center);
 			left = offset;
 
 			/* escalate right side test precision */
 			offset = lr[lrc * 2 + 1];
-			limit = lr[lrc * 2 + 0];
+//			limit = lr[lrc * 2 + 0];
 			do {
 				int result;
 				settrim(lane, line, offset, WRITETRIM);
@@ -501,10 +505,9 @@ int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 				if (result)
 					break;
 				offset--;
-			} while (offset > limit);
+			} while (offset > center);
 			right = offset;
 
-			int center, margin;
 			center = right - ((right - left) >> 1);
 			if (right - left <= 0) {
 				center = 63;
@@ -543,12 +546,12 @@ int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 	return minm;
 }
 
-int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
+static int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 {
 #if 1
 	unsigned int lane, i;
 	unsigned char cm[32];
-	unsigned char lr[20];
+	unsigned char lr[40];
 
 	if (option & 1 << 0) {
 		for (i = 63; i > 0; i--)
@@ -600,9 +603,13 @@ int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 				continue;
 			}
 
+			unsigned int center, margin;
 			/* escalate left side test precision */
-			offset = lr[lrc * 2 + 0];
-			unsigned int limit = lr[lrc * 2 + 1];
+//			offset = lr[lrc * 2 + 0];
+			left = offset = lr[lrc * 2 + 0];
+//			unsigned int limit = lr[lrc * 2 + 1];
+			right = lr[lrc * 2 + 1];
+			center = right - ((right - left) >> 1);
 			do {
 				settrim(lane, line, offset, READTRIM);
 				result = checkresult(targetaddr, lane * 8 + line,
@@ -611,12 +618,12 @@ int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 				if (result)
 					break;
 				offset++;
-			} while (offset < limit);
+			} while (offset < center);
 			left = offset;
 
 			/* escalate right side test precision */
 			offset = lr[lrc * 2 + 1];
-			limit = lr[lrc * 2 + 0];
+//			limit = lr[lrc * 2 + 0];
 			do {
 				int result;
 				settrim(lane, line, offset, READTRIM);
@@ -626,11 +633,9 @@ int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 				if (result)
 					break;
 				offset--;
-			} while (offset > limit);
+			} while (offset > center);
 			right = offset;
 
-
-			unsigned int center, margin;
 			center = right - ((right - left) >> 1);
 			if (right - left <= 0) {
 				center = 63;
@@ -707,6 +712,7 @@ void getdlllockvalue(int cnt)
 	} while (lockv[++j].cnt);
 }
 
+#if 0
 void getimpedance(unsigned int testtargetaddr, unsigned int option, int cs)
 {
 	int i, j, k, cm, maxi = 0, maxj = 0, maxk = 0, maxm = 0;
@@ -774,24 +780,28 @@ void getimpedance(unsigned int testtargetaddr, unsigned int option, int cs)
 	if (cs)
 		setwriteodtw(maxk);
 }
+#endif
 
-void trimtest(unsigned int testtargetaddr, unsigned int option)
+int trimtest(unsigned int testtargetaddr, unsigned int option)
 {
+	int ret = 1;
 	if (option & 1 << 2)
 		getdlllockvalue(100000);
 
+#if 0
 	if (option & 1 << 5)
 		getimpedance(testtargetaddr, option, 1);
+#endif
 
 	printf("phy ver:%x\r\n", *(unsigned int *)0x230911B0);
 
 	if (option & 1 << 3) {
-		get_read_bit_margin(testtargetaddr, option);
+		ret = get_read_bit_margin(testtargetaddr, option);
 		printf("read bit cal done\r\n");
 	}
 
 	if (option & 1 << 4) {
-		get_write_bit_margin(testtargetaddr, option);
+		ret = get_write_bit_margin(testtargetaddr, option);
 		printf("write bit cal done\r\n\n");
 	}
 
@@ -801,6 +811,7 @@ void trimtest(unsigned int testtargetaddr, unsigned int option)
 		(struct nx_vddpwr_reg *)PHY_BASEADDR_VDDPWR;
 	pvddpwr->new_scratch[6] = 0x4d656d43;   /* MemC */
 //	printf("mem cal save marking\r\n");
+	return ret;
 }
 
 void trimset(char readcal[], char writecal[])
@@ -825,6 +836,9 @@ void trimset(char readcal[], char writecal[])
 //		printf("%02d ", writecal[i] - 63);
 	}
 //	printf("\r\n\n");
+	struct nx_vddpwr_reg *pvddpwr =
+		(struct nx_vddpwr_reg *)PHY_BASEADDR_VDDPWR;
+	pvddpwr->new_scratch[6] = 0;   /* clear marking */
 }
 
 int checkcaldata(char readcal[], char writecal[])
