@@ -74,6 +74,9 @@ static void get_dram_information(struct dram_device_info *me)
 }
 #endif
 
+void trimset(char *, char *);
+int checkcaldata(char *, char *);
+int trimtest(unsigned int, unsigned int);
 int memory_initialize(unsigned int is_resume)
 {
 	int ret = 0;
@@ -101,7 +104,7 @@ int memory_initialize(unsigned int is_resume)
 		if (checkcaldata(g_nsih->readcal, g_nsih->writecal))
 			trimset(g_nsih->readcal, g_nsih->writecal);
 		else
-			trimtest(0x40000000,
+			ret = trimtest(0x40000000,
 				(1 << 0) |	/* Bit Cal state	*/
 				(1 << 1) |	/* Center, Margin value */
 				(1 << 2) |	/* Lock Value		*/
