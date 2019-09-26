@@ -515,7 +515,7 @@ static int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 			} else
 				margin = right - center;
 
-			settrim(lane, line, center, WRITETRIM);
+			settrim(lane, line, 63, WRITETRIM);
 			cm[(line + lane * 8) * 2 + 0] = center;
 			cm[(line + lane * 8) * 2 + 1] = margin;
 		}
@@ -643,7 +643,7 @@ static int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 			} else
 				margin = right - center;
 
-			settrim(lane, line, center, READTRIM);
+			settrim(lane, line, 63, READTRIM);
 			cm[(line + lane * 8) * 2 + 0] = center;
 			cm[(line + lane * 8) * 2 + 1] = margin;
 		}
