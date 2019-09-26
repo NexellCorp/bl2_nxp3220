@@ -76,7 +76,7 @@ static unsigned int reg_read_ctrl(int addr)
 }
 #endif
 
-
+#define TRIM_VALUE	63
 #define READTRIM	0
 #define WRITETRIM	1
 static void settrim(u32 lane, u32 line, u32 offset, int rw)
@@ -515,7 +515,7 @@ static int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 			} else
 				margin = right - center;
 
-			settrim(lane, line, center, WRITETRIM);
+			settrim(lane, line, TRIM_VALUE, WRITETRIM);
 			cm[(line + lane * 8) * 2 + 0] = center;
 			cm[(line + lane * 8) * 2 + 1] = margin;
 		}
@@ -643,7 +643,7 @@ static int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 			} else
 				margin = right - center;
 
-			settrim(lane, line, center, READTRIM);
+			settrim(lane, line, TRIM_VALUE, READTRIM);
 			cm[(line + lane * 8) * 2 + 0] = center;
 			cm[(line + lane * 8) * 2 + 1] = margin;
 		}
