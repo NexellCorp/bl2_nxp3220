@@ -74,6 +74,10 @@ CFLAGS				= -DNX_RELEASE -Os
 Q				= @
 endif
 
+ifeq ($(DEBUG_DDR_SHOW_CAL), y)
+CFLAGS				+= -DDEBUG_DDR_SHOW_CAL
+endif
+
 # MISC tools for MS-DOS
 ifeq ($(OS),Windows_NT)
 MKDIR				= mkdir

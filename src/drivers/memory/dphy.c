@@ -124,6 +124,7 @@ void reg_clear_phy(int addr, int reg_value)
 #endif
 }
 
+#if 0
 static int get_period_ps(void)
 {
 	int cycle_period_ps;
@@ -133,6 +134,7 @@ static int get_period_ps(void)
 
 	return cycle_period_ps;
 }
+#endif
 
 int hw_write_leveling(void)
 {
@@ -151,7 +153,7 @@ int hw_write_leveling(void)
 
 	/* step 03. display the write-leveling information */
 	wrlvl_rslt = ((reg_read_phy(WRLVL_CTRL)	>> 0) & lane_mask);
-	printf("Write Leveling %s!! (%d) \r\n", (wrlvl_rslt == 0x3)
+	NOTICE("Write Leveling %s!! (%d) \r\n", (wrlvl_rslt == 0x3)
 		? "Pass" : "Failed", wrlvl_rslt);
 
 	return true;
@@ -677,8 +679,8 @@ void phy_set_init_values (void)
 	#elif defined(LPDDR2)
 		extra_addrctrl_dly = 6;						// small delay since LPDDR2 does not have WR leveling
 	#endif
-	VERBOSE("dram_clk_period: %d\r\n\textra_addrctrl_dly: %d \r\n",
-			dram_clk_period, extra_addrctrl_dly);
+	NOTICE("dram clk period: %d, extra addrctrl dly: %d \r\n",
+		dram_clk_period, extra_addrctrl_dly);
 	// Add delay to addr/ctrl lines for write leveling
 	// PHY_DLL_ADRCTRL
 	reg_value = (extra_addrctrl_dly << 0) |					//dlls_trim_adrctrl
