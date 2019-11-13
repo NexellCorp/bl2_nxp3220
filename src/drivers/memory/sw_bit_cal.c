@@ -26,9 +26,17 @@
 #include <chip.h>
 #include <alive.h>
 #include <libnx.h>
+#include "log.h"
 #include "dphy.h"
 #include "dctrl.h"
 #include "ddr3/ddr3_sdram.h"
+
+#ifdef DEBUG_DDR_SHOW_CAL
+#define DDR_DBG_CAL(m...)		printf(m)
+#else
+#define DDR_DBG_CAL(m...)		empty_printf(m)
+#endif
+#define DDR_MSG(m...)		printf(m)
 
 void wrtest(u32 *dst, u32 *src);
 void burstread8(u32 *src, u32 *buf);
@@ -49,13 +57,12 @@ static void save_cal_data(int dnum, unsigned int offset, int rw)
 
 	if (dnum & 3) {
 		rv = pvddpwr->new_scratch[sb];
-//		rv &= ~(0xff << (8 * (dnum & 3)));
+	     /* rv &= ~(0xff << (8 * (dnum & 3))); */
 	} else
 		rv = 0;
 
 	rv |= offset << (8 * (dnum & 3));
 	pvddpwr->new_scratch[sb] = rv;
-//	printf("%d:%08x\r\n", sb, pvddpwr->new_scratch[sb]);
 }
 #if 0
 static void reg_write_phy(int addr, unsigned int reg_value)
@@ -236,9 +243,9 @@ static int checkpattern(unsigned int *src, unsigned int *target, unsigned int ma
 	int i;
 	for (i = 0; i < 8; i++) {
 		if ((src[i] & mask) != (target[i] & mask)) {
-#if 0
+#ifdef DDR_DEBUG_CHECKPATTERN
 			unsigned int *buf = target;
-			printf("%X %X %X %X %X %X %X %X\r\n",
+			DDR_MSG("%X %X %X %X %X %X %X %X\r\n",
 					buf[0], buf[1], buf[2], buf[3],
 					buf[4], buf[5], buf[6], buf[7]);
 #endif
@@ -258,14 +265,14 @@ static int memtest_checkpattern(unsigned int *src, unsigned int *target,
 		if ((src[i] & mask) != (target[i] & mask)) {
 			unsigned int *buf = target;
 
-			printf("src[%d] %x buf[%d] %x \r\n",0, src[0], 0, buf[0]);
-			printf("src[%d] %x buf[%d] %x \r\n",1, src[1], 1, buf[1]);
-			printf("src[%d] %x buf[%d] %x \r\n",2, src[2], 2, buf[2]);
-			printf("src[%d] %x buf[%d] %x \r\n",3, src[3], 3, buf[3]);
-			printf("src[%d] %x buf[%d] %x \r\n",4, src[4], 4, buf[4]);
-			printf("src[%d] %x buf[%d] %x \r\n",5, src[5], 5, buf[5]);
-			printf("src[%d] %x buf[%d] %x \r\n",6, src[6], 6, buf[6]);
-			printf("src[%d] %x buf[%d] %x \r\n",7, src[7], 7, buf[7]);
+			DDR_MSG("src[%d] %x buf[%d] %x \r\n",0, src[0], 0, buf[0]);
+			DDR_MSG("src[%d] %x buf[%d] %x \r\n",1, src[1], 1, buf[1]);
+			DDR_MSG("src[%d] %x buf[%d] %x \r\n",2, src[2], 2, buf[2]);
+			DDR_MSG("src[%d] %x buf[%d] %x \r\n",3, src[3], 3, buf[3]);
+			DDR_MSG("src[%d] %x buf[%d] %x \r\n",4, src[4], 4, buf[4]);
+			DDR_MSG("src[%d] %x buf[%d] %x \r\n",5, src[5], 5, buf[5]);
+			DDR_MSG("src[%d] %x buf[%d] %x \r\n",6, src[6], 6, buf[6]);
+			DDR_MSG("src[%d] %x buf[%d] %x \r\n",7, src[7], 7, buf[7]);
 			return 0;
 		}
 	}
@@ -425,12 +432,13 @@ static int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 	unsigned char cm[32];
 	unsigned char lr[40];
 
+	DDR_DBG_CAL("\r\n");
 	if (option & 1 << 0) {
 		for (i = 63; i > 0; i--)
-			printf("%d", i % 10);
+			DDR_DBG_CAL("%d", i % 10);
 		for (i = 0; i <= 63; i++)
-			printf("%d", i % 10);
-		printf("\r\n");
+			DDR_DBG_CAL("%d", i % 10);
+		DDR_MSG("\r\n");
 	}
 
 	for (lane = 0; lane < 2; lane++) {
@@ -462,10 +470,10 @@ static int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 				}
 
 				if (option & 1 << 0)
-					printf("%c", result ? 'O' : '-');
+					DDR_DBG_CAL("%c", result ? 'O' : '-');
 			}
 			if (option & 1 << 0)
-				printf("\r\n");
+				DDR_DBG_CAL("\r\n");
 
 			lrc = findbest(lr, lrc);
 			if (lrc == 0xff) {
@@ -526,17 +534,17 @@ static int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 
 	if (option & 1 << 1) {
 		for (i = 0; i < 16; i++) {
-			printf("DQ%02d ", i);
+			DDR_MSG("DQ%02d ", i);
 		}
-		printf("\r\n");
+		DDR_MSG("\r\n");
 		for (i = 0; i < 16; i++) {
-			printf(" %3d ", cm[i * 2 + 0] - 63);
+			DDR_MSG(" %3d ", cm[i * 2 + 0] - 63);
 		}
-		printf("\r\n");
+		DDR_MSG("\r\n");
 		for (i = 0; i < 16; i++) {
-			printf("  %2d ", cm[i * 2 + 1]);
+			DDR_MSG("  %2d ", cm[i * 2 + 1]);
 		}
-		printf("\r\n\n");
+		DDR_MSG("\r\n\n");
 	}
 
 	int minm = 31;
@@ -548,17 +556,17 @@ static int get_write_bit_margin(unsigned int targetaddr, unsigned int option)
 
 static int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 {
-#if 1
 	unsigned int lane, i;
 	unsigned char cm[32];
 	unsigned char lr[40];
 
+	DDR_DBG_CAL("\r\n");
 	if (option & 1 << 0) {
 		for (i = 63; i > 0; i--)
-			printf("%d", i % 10);
+			DDR_DBG_CAL("%d", i % 10);
 		for (i = 0; i <= 63; i++)
-			printf("%d", i % 10);
-		printf("\r\n");
+			DDR_DBG_CAL("%d", i % 10);
+		DDR_MSG("\r\n");
 	}
 
 	MPR(1);
@@ -590,10 +598,10 @@ static int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 				}
 
 				if (option & 1 << 0)
-					printf("%c", prev ? 'O' : '-');
+					DDR_DBG_CAL("%c", prev ? 'O' : '-');
 			}
 			if (option & 1 << 0)
-				printf("\r\n");
+				DDR_DBG_CAL("\r\n");
 
 			lrc = findbest(lr, lrc);
 			if (lrc == 0xff) {
@@ -655,26 +663,23 @@ static int get_read_bit_margin(unsigned int targetaddr, unsigned int option)
 
 	if (option & 1 << 1) {
 		for (i = 0; i < 16; i++) {
-			printf("DQ%02d ", i);
+			DDR_MSG("DQ%02d ", i);
 		}
-		printf("\r\n");
+		DDR_MSG("\r\n");
 		for (i = 0; i < 16; i++) {
-			printf(" %3d ", cm[i * 2 + 0] - 63);
+			DDR_MSG(" %3d ", cm[i * 2 + 0] - 63);
 		}
-		printf("\r\n");
+		DDR_MSG("\r\n");
 		for (i = 0; i < 16; i++) {
-			printf("  %2d ", cm[i * 2 + 1]);
+			DDR_MSG("  %2d ", cm[i * 2 + 1]);
 		}
-		printf("\r\n\n");
+		DDR_MSG("\r\n\n");
 	}
 	int minm = 31;
 	for (i = 0; i < 16; i++)
 		if (minm > cm[i * 2 + 1])
 			minm = cm[i * 2 + 1];
 	return minm;
-#else
-	return 0;
-#endif
 }
 
 void getdlllockvalue(int cnt)
@@ -689,7 +694,7 @@ void getdlllockvalue(int cnt)
 	for (j = 0; j < 8; j++)
 		lockv[j].cnt = 0;
 
-	printf("check clock jitter\r\n");
+	NOTICE("check clock jitter\r\n");
 	i = cnt;
 	while (i--) {
 		lockvalue = reg_read_phy(PHY_DLL_ADRCTRL) >> 24;
@@ -708,7 +713,7 @@ void getdlllockvalue(int cnt)
 
 	j = 0;
 	do {
-		printf("%d : %d\r\n", lockv[j].lockv, lockv[j].cnt);
+		DDR_MSG("\t%d : %d\r\n", lockv[j].lockv, lockv[j].cnt);
 	} while (lockv[++j].cnt);
 }
 
@@ -717,20 +722,20 @@ void getimpedance(unsigned int testtargetaddr, unsigned int option, int cs)
 {
 	int i, j, k, cm, maxi = 0, maxj = 0, maxk = 0, maxm = 0;
 
-	printf("read impedance test\r\n");
+	DDR_MSG("read impedance test\r\n");
 	for (i = 0; i < 8; i++) {
-//		printf("controller odt:%d\r\n", i);
+//		DDR_MSG("controller odt:%d\r\n", i);
 		setreadodt(i);
 		for (j = 0; j < 2; j++) {
-//			printf("dram ds:%d\r\n", j);
+//			DDR_MSG("dram ds:%d\r\n", j);
 			setreadds(j);
 			for (k = (cs ? 1 : 0); k < (1 + 2 * (cs ? 1 : 0)); k++) {
 				if (cs) {
-//					printf("dram write dynamic odt:%d\r\n", k);
+//					DDR_MSG("dram write dynamic odt:%d\r\n", k);
 					setwriteodtw(k);
 				}
 				cm = get_read_bit_margin(testtargetaddr, option);
-				printf("co:%d, dds:%d, ddo:%d, cm:%d\r\n\n",
+				DDR_MSG("co:%d, dds:%d, ddo:%d, cm:%d\r\n\n",
 						i, j, k, cm);
 				if (maxm < cm) {
 					maxm = cm;
@@ -745,24 +750,24 @@ void getimpedance(unsigned int testtargetaddr, unsigned int option, int cs)
 	setreadds(maxj);
 	if (cs)
 		setwriteodtw(maxk);
-	printf("max impedance odt:%d, ds:%d, odtw:%d, margin:%d\r\n\n\n",
+	DDR_MSG("max impedance odt:%d, ds:%d, odtw:%d, margin:%d\r\n\n\n",
 			maxi, maxj, maxk, maxm);
 
 	maxm = 0;
-	printf("write impedance test\r\n");
+	DDR_MSG("write impedance test\r\n");
 	for (i = 0; i < 8; i++) {
-//		printf("controller ds:%d\r\n", i);
+//		DDR_MSG("controller ds:%d\r\n", i);
 		setwriteds(i);
 		for (j = 1; j < 6; j++) {
-//			printf("dram odt:%d\r\n", j);
+//			DDR_MSG("dram odt:%d\r\n", j);
 			setwriteodtn(j);
 			for (k = (cs ? 1 : 0); k < 1 + 2 * (cs ? 1 : 0); k++) {
 				if (cs) {
-//					printf("dram write dynamic odt:%d\r\n", k);
+//					DDR_MSG("dram write dynamic odt:%d\r\n", k);
 					setwriteodtw(k);
 				}
 				cm = get_write_bit_margin(testtargetaddr, option);
-				printf("cds:%d, don:%d, ddo:%d, cm:%d\r\n\n",
+				DDR_MSG("cds:%d, don:%d, ddo:%d, cm:%d\r\n\n",
 						i, j, k, cm);
 				if (maxm < cm) {
 					maxm = cm;
@@ -773,7 +778,7 @@ void getimpedance(unsigned int testtargetaddr, unsigned int option, int cs)
 			}
 		}
 	}
-	printf("max impedance ds:%d, otdn:%d, odtw:%d, margin:%d\r\n\n",
+	DDR_MSG("max impedance ds:%d, otdn:%d, odtw:%d, margin:%d\r\n\n",
 			maxi, maxj, maxk, maxm);
 	setwriteds(maxi);
 	setwriteodtn(maxj);
@@ -793,16 +798,16 @@ int trimtest(unsigned int testtargetaddr, unsigned int option)
 		getimpedance(testtargetaddr, option, 1);
 #endif
 
-	printf("phy ver:%x\r\n", *(unsigned int *)0x230911B0);
+	NOTICE("PHY VER:%x\r\n", *(unsigned int *)0x230911B0);
 
 	if (option & 1 << 3) {
 		ret = get_read_bit_margin(testtargetaddr, option);
-		printf("read bit cal done\r\n");
+		NOTICE("read bit cal done\r\n");
 	}
 
 	if (option & 1 << 4) {
 		ret = get_write_bit_margin(testtargetaddr, option);
-		printf("write bit cal done\r\n\n");
+		NOTICE("write bit cal done\r\n\n");
 	}
 
 //	struct nx_alive_reg *palive = (struct nx_alive_reg *)PHY_BASEADDR_ALIVE;
@@ -810,7 +815,7 @@ int trimtest(unsigned int testtargetaddr, unsigned int option)
 	struct nx_vddpwr_reg *pvddpwr =
 		(struct nx_vddpwr_reg *)PHY_BASEADDR_VDDPWR;
 	pvddpwr->new_scratch[6] = 0x4d656d43;   /* MemC */
-//	printf("mem cal save marking\r\n");
+//	DDR_MSG("mem cal save marking\r\n");
 	return ret;
 }
 
@@ -820,22 +825,22 @@ void trimset(char readcal[], char writecal[])
 
 //	settrim(0, 8, 32, READTRIM);	/* DM */
 //	settrim(1, 8, 32, READTRIM);
-//	printf("read cal:\r\n");
+//	DDR_MSG("read cal:\r\n");
 	for (i = 0; i < 16; i++) {
 		settrim(i >> 3, i & 0x7, readcal[i], READTRIM);
-//		printf("%02d ", readcal[i] - 63);
+//		DDR_MSG("%02d ", readcal[i] - 63);
 	}
 
 //	settrim(0, 8, 59, WRITETRIM);	/* DM */
 //	settrim(0, 9, 32, WRITETRIM);	/* DQS */
 //	settrim(1, 8, 59, WRITETRIM);
 //	settrim(1, 9, 32, WRITETRIM);
-//	printf("\r\nwrite cal:\r\n");
+//	DDR_MSG("\r\nwrite cal:\r\n");
 	for (i = 0; i < 16; i++) {
 		settrim(i >> 3, i & 0x7, writecal[i], WRITETRIM);
-//		printf("%02d ", writecal[i] - 63);
+//		DDR_MSG("%02d ", writecal[i] - 63);
 	}
-//	printf("\r\n\n");
+//	DDR_MSG("\r\n\n");
 	struct nx_vddpwr_reg *pvddpwr =
 		(struct nx_vddpwr_reg *)PHY_BASEADDR_VDDPWR;
 	pvddpwr->new_scratch[6] = 0;   /* clear marking */
@@ -868,18 +873,18 @@ int get_read_test(unsigned int targetaddr)
 	unsigned int buf[8], *tp;
 	tp = wtp;
 
-	printf("Enter: %s !!!!!!\r\n", __func__);
+	DDR_MSG("Enter: %s !!!!!!\r\n", __func__);
 	for (i = 0; i < 100000; i++) {
 		burstwrite8((unsigned int *)targetaddr+(0x1000*i), tp);
 		burstread8((unsigned int *)targetaddr+(0x1000*i), buf);
 		result_check= memtest_checkpattern(tp, buf, 0xFFFFFFFF);
 
 		if (!result_check) {
-			printf("read test error!! %d 0x%x\n", i, targetaddr+(0x1000*i));
+			DDR_MSG("read test error!! %d 0x%x\n", i, targetaddr+(0x1000*i));
 			return 0;
 		}
 	}
-	printf("End: %s !!!!!!\r\n", __func__);
+	DDR_MSG("End: %s !!!!!!\r\n", __func__);
 
 	return 1;
 }
