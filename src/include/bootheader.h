@@ -245,7 +245,13 @@ struct sbi_header {
 	int8_t readcal[16];				/* 0x098 ~ 0x0A7	*/
 	int8_t writecal[16];				/* 0x0A8 ~ 0x0B7	*/
 
-	uint32_t reserved1[14]; 			/* 0x0B8 ~ 0x0F0	*/
+	uint32_t reserved0[2]; 				/* 0x0B8 ~ 0x0C0	*/
+
+	uint32_t nand_cmd_time; 			/* 0x0C0 */
+	uint32_t nand_dat_time; 			/* 0x0C4 */
+	uint32_t nand_ddr_time; 			/* 0x0C8 */
+
+	uint32_t reserved1[9]; 				/* 0x0CC ~ 0x0F0	*/
 
 	uint32_t is_secure_os	:4;			/* 0x0F0 : 0 ~ 3	*/
 	uint32_t is_n_secure_os :4;			/* 0x0F0 : 4 ~ 7	*/
