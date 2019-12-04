@@ -30,6 +30,9 @@
 #define getc		serial_getc
 #define putc		serial_putc
 
+#define getchar		serial_getc
+#define putchar		serial_putc
+
 #define serial_done	serial_is_uart_tx_done
 #define serial_busy	serial_is_busy
 #define serial_tx_empty	serial_is_tx_empty
