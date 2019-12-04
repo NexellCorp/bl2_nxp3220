@@ -875,8 +875,8 @@ int get_read_test(unsigned int targetaddr)
 
 	DDR_MSG("Enter: %s !!!!!!\r\n", __func__);
 	for (i = 0; i < 100000; i++) {
-		burstwrite8((unsigned int *)targetaddr+(0x1000*i), tp);
-		burstread8((unsigned int *)targetaddr+(0x1000*i), buf);
+		burstwrite8((unsigned int *)(targetaddr+(0x1000*i)), tp);
+		burstread8((unsigned int *)(targetaddr+(0x1000*i)), buf);
 		result_check= memtest_checkpattern(tp, buf, 0xFFFFFFFF);
 
 		if (!result_check) {
