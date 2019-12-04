@@ -77,6 +77,7 @@ static void get_dram_information(struct dram_device_info *me)
 void trimset(char *, char *);
 int checkcaldata(char *, char *);
 int trimtest(unsigned int, unsigned int);
+void mem_init_seq_ddr3 (unsigned int is_resume);
 int memory_initialize(unsigned int is_resume)
 {
 	int ret = 0;
@@ -91,6 +92,7 @@ int memory_initialize(unsigned int is_resume)
 	NOTICE("Memory Initialize %s! (%d:%d) \r\n",
 			(ret >= 0) ? "Done" : "Failed", ret, is_resume);
 
+reInit:
 	/* @brief: auto write-leveling  */
 	if (g_nsih->cal_mode & 1 << 2)
 		hw_write_leveling();
@@ -101,9 +103,10 @@ int memory_initialize(unsigned int is_resume)
 
 	/* @brief: "libddr.a" in manual bit-leveling */
 	if (g_nsih->cal_mode & 1 << 1) {
-		if (checkcaldata(g_nsih->readcal, g_nsih->writecal))
+		if (checkcaldata(g_nsih->readcal, g_nsih->writecal)
+			&& (is_resume == FALSE)) {
 			trimset(g_nsih->readcal, g_nsih->writecal);
-		else
+		} else {
 			ret = trimtest(0x40000000,
 				(1 << 0) |	/* Bit Cal state	*/
 				(1 << 1) |	/* Center, Margin value */
@@ -111,11 +114,22 @@ int memory_initialize(unsigned int is_resume)
 				(1 << 3) |	/* Read Cal enable	*/
 				(1 << 4) |	/* Write Cal enable	*/
 				(0 << 5));	/* r/w impedence test	*/
+		}
 	}
 
 #ifdef DDR_TEST_MODE
 	get_read_test(0x40000000);
 #endif
+	if (ret == 0 && (is_resume == TRUE)) {
+		/* @brief: issue: when resume, sometimes DDR does not work.
+		 * Workaround: initialize DDR and retry calibration.
+		 * need to proof why(ToDo)
+		 */
+		NOTICE("Memory Calibration Failed! (%d:%d) \r\n",
+			ret, is_resume);
+		mem_init_seq_ddr3(FALSE);
+		goto reInit;
+	}
 	if (ret < 0)
 		return -1;
 
@@ -124,5 +138,6 @@ int memory_initialize(unsigned int is_resume)
 #elif defined(STANDARD_MEMTEST)
 	standard_memtester();
 #endif
+	NOTICE("Memory Initialize Done. ret=%d\r\n", ret);
 	return ret;
 }
