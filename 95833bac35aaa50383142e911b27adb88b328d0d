@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f50bcc2e_3231617b",
+        "filename": "src/drivers/serial/printf.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1015645
+      },
+      "writtenOn": "2019-12-05T01:52:55Z",
+      "side": 1,
+      "message": "is this need ?",
+      "range": {
+        "startLine": 33,
+        "startChar": 0,
+        "endLine": 34,
+        "endChar": 28
+      },
+      "revId": "95833bac35aaa50383142e911b27adb88b328d0d",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
