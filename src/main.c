@@ -100,10 +100,10 @@ void main(void)
 
 	clock_information();
 
-	if (ret)
+	if (ret >= 0)
 		plat_load();
 	else {
-		printf("ddr mem set error. system halt!!!!\r\n");
+		printf("ddr mem set error. system halt (ret.%d)!!!!\r\n", ret);
 		while (1);
 	}
 }
