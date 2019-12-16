@@ -42,6 +42,7 @@
   ************************************************/
 void pmic_board_init(void)
 {
+#ifdef PMIC_NXE1500
 	char data = 0;
 
 	I2C_INIT(NXE1500_I2C_GPIO_GRP, NXE1500_I2C_SCL, NXE1500_I2C_SDA,
@@ -68,10 +69,12 @@ void pmic_board_init(void)
 	nxe1500_write(NXE1500_REG_LDO2VOL, &data, 1);
 
 	I2C_DEINIT();
+#endif
 }
 
 void pmic_poweroff(void)
 {
+#ifdef PMIC_NXE1500
 	char data;
 
 	I2C_INIT(NXE1500_I2C_GPIO_GRP, NXE1500_I2C_SCL, NXE1500_I2C_SDA,
@@ -84,4 +87,5 @@ void pmic_poweroff(void)
 	nxe1500_write(NXE1500_REG_SLPCNT, &data, 1);
 
 	I2C_DEINIT();
+#endif
 }
