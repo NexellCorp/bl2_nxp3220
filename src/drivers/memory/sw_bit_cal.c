@@ -37,6 +37,7 @@ void burstread4(u32 *src, u32 *buf);
 void burstwrite4(u32 *dst, u32 *buf);
 #define DPHY_BASE_ADDR                  0x23091000
 #define DCTRL_BASE_ADDR			0x23090000
+#define printf				empty_printf
 
 extern union DDR3_SDRAM_MR MR0, MR1, MR2, MR3;
 
