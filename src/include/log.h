@@ -28,7 +28,7 @@
 #include <printf.h>
 
 // User Debug Message
-#if 1
+#if 0
 #define SYSMSG  printf
 #else
 #define SYSMSG	empty_printf
@@ -49,7 +49,7 @@
 #endif
 
 
-#define LOG_LEVEL			50
+#define LOG_LEVEL			10
 
 #define LOG_LEVEL_NONE			0
 #define LOG_LEVEL_ERROR			10
