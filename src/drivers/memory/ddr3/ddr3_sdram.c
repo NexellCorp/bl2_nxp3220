@@ -50,13 +50,16 @@ void dphy_global_reset(void)
 
 void self_refresh_entry(void)
 {
+#ifdef SET_OLD_SELF_REFRESH
 	union DDR3_SDRAM_MR MR;
+#endif
 	unsigned int reg_value = 0;
 	int c_ctrl_st = 0;
 
 #if 1
+#ifdef SET_OLD_SELF_REFRESH
 	MR.REG          = 0;
-	MR.MR2.RTT_WR   = 0; 							/* 0: disable, 1: RZQ/4 (60ohm), 2: RZQ/2 (120ohm)	*/
+	MR.MR2.RTT_WR   = 0;							/* 0: disable, 1: RZQ/4 (60ohm), 2: RZQ/2 (120ohm)	*/
 	MR.MR2.SRT      = 0;							/* self refresh normal range, if (ASR == 1) SRT = 0;	*/
 	MR.MR2.ASR      = 1;							/* auto self refresh enable				*/
 	MR.MR2.CWL	= (g_nsih->dii.ac_timing.WL + 0);			/* WL + AL						*/
@@ -79,6 +82,7 @@ void self_refresh_entry(void)
 	/* Turn OFF DSCL - Whether PHY or controller triggered */
 	reg_write_phy(DSCL_CNT, reg_value);
 	reg_write_phy(AUTO_SCL_CTRL, reg_value);
+#endif
 
 	/* Set ref_burst_cnt to 1 to ensure quick entry into self refresh */
 	mmio_set_32((DCTRL_BASE_ADDR + REF_CONFIG), (0x1 << 28));
@@ -116,9 +120,11 @@ void self_refresh_entry(void)
 	index = ((reg_read_ctrl(DLY_CONFIG_2) & 0xFF) + index);
 	ldelay(index * 10);
 
+#ifdef SET_OLD_SELF_REFRESH
 	/* 'receiver_en' bit in 'PHY_PAD_CTRL' set 0 */
 	reg_clear_phy(PHY_PAD_CTRL, (1 << 28));
 	reg_clear_phy(VREF_TRAINING, (1 << 4) | (1 << 2));
+#endif
 }
 
 void enter_self_refresh(void)
@@ -135,7 +141,7 @@ void enter_self_refresh(void)
 
 	/* Step 03. (DRAM) ODT OFF */
 	MR.REG          = 0;
-	MR.MR2.RTT_WR   = 0; 							// 0: disable, 1: RZQ/4 (60ohm), 2: RZQ/2 (120ohm)
+	MR.MR2.RTT_WR   = 0;							// 0: disable, 1: RZQ/4 (60ohm), 2: RZQ/2 (120ohm)
 	MR.MR2.SRT      = 0;							// self refresh normal range, if (ASR == 1) SRT = 0;
 	MR.MR2.ASR      = 1;							// auto self refresh enable
 	MR.MR2.CWL	= (g_nsih->dii.ac_timing.WL + 0);			// WL + AL
@@ -225,6 +231,108 @@ void exit_self_refresh(void)
 
 union DDR3_SDRAM_MR MR0, MR1, MR2, MR3;
 
+void resume_mem_init_seq_ddr3 (void)
+{
+	int mr0_cl, mr0_wr;
+
+	int nCL  = (g_nsih->dii.ac_timing.RL + 0);				// RL + AL  tCK
+	int nWR  = (g_nsih->dii.ac_timing.tWR * 2);
+
+	int wait_cycle;
+	int reg_value;
+
+	reg_write_ctrl(MEM_START, 0x1);					// Kick off controller initialization state m/c
+
+	/* Step 01. Power ON. Assert RESET# and ensure CKE is LOW at least max of 10ns or 5tCK */
+	reg_clear_ctrl(MEM_WIDTH, (1 << 4));				// Bit 4 controls dfi_reset_n
+
+	host_cmd_load(HOST_CMD_1_0, 0, CMD_CKE_LOW, 5);//max(8000/2500, 5)); ///
+	host_cmd_load(HOST_CMD_1_1, 0, CMD_CKE_LOW, 0);
+
+	/* Issue 2 commands to the intialization state m/c and wait for it to be done */
+	reg_write_ctrl(HOST_CMD_ISSUE, 0x11);
+	while (reg_read_ctrl(HOST_CMD_ISSUE) & 0x10);
+	/* Issue 2 commands to the intialization state m/c and wait for it to be done. */
+
+	/*
+	 * Step 02. DRAM RESET# pin must be LOW for at least 200us before DRAM is brought out of reset
+	 * We can't do this in simulation. Therefore ignore the following warning from the DRAM model:
+	 * WARNING: 200 us is required before RST_N goes inactive.
+	 * Insert software function to wait 200us here.
+	 */
+	udelay(200);
+
+	/* 03. CKE must be LOW 10ns prior to RESET# transitioning HIGH A`lready taken care of. So Deasserting RESET# */
+	reg_set_ctrl(MEM_WIDTH, (1 << 4)|(1 << 1));			// dfi_reset_n
+
+	/*
+	 * Step 04. After RESET# is deasserted, wait 500us with CKE LOW
+	 * We can't do this in simulation. Therefore ignore the following warning from the DRAM model:
+	 * WARNING: 500 us is required after RST_N goes inactive before CKE goes active.
+	 * Insert software function to wait 500us here..
+	 */
+	udelay(500);
+
+	wait_cycle = (g_nsih->dii.ac_timing.tMRD);
+
+	/* Step 08. Issue an MRS command to MR1. */
+	MR1.REG			= 0;
+	MR1.MR1.DLL		= 0;					// 0: Enable, 1: Disable
+	MR1.MR1.AL		= 0;
+	MR1.MR1.RTT_Nom0	= ((g_nsih->dsinfo.mr1_rtt_nom >> 0) & 0x1);
+	MR1.MR1.RTT_Nom1	= ((g_nsih->dsinfo.mr1_rtt_nom >> 1) & 0x1);
+	MR1.MR1.RTT_Nom2	= ((g_nsih->dsinfo.mr1_rtt_nom >> 2) & 0x1);
+	MR1.MR1.ODS0		= ((g_nsih->dsinfo.mr1_ods >> 0) & 0x1);
+	MR1.MR1.ODS1		= ((g_nsih->dsinfo.mr1_ods >> 1) & 0x1);
+	MR1.MR1.QOff		= 0;
+	MR1.MR1.WL		= 0;
+	host_cmd_load_mr(HOST_CMD_1_3, SDRAM_MODE_REG_MR1, MR1.REG, wait_cycle);
+
+	/* Step 09. Issue an MRS command to MR0. */
+	if ((nCL >= 5) && (11 >= nCL))
+		mr0_cl = ((nCL -  4) << 1);
+	else if ((nCL >= 12) && (16 >= nCL))
+		mr0_cl = (((nCL - 12) << 1) | 0x1);
+	else
+		mr0_cl = 0;
+
+	if ((nWR >= 5) && (8 >= nWR))
+		mr0_wr = (nWR - 4);
+	else if ((nWR >= 10) && (nWR <= 14))
+		mr0_wr = (nWR / 2);
+	else
+		mr0_wr = 0;
+
+	MR0.REG			= 0;
+	MR0.MR0.PD		= 1;					// PD_EXIT
+	MR0.MR0.WR		= mr0_wr;
+	MR0.MR0.DLL		= 1;					// DLL_RESET
+	MR0.MR0.CL0		= ((mr0_cl >> 0) & 0x1);
+	MR0.MR0.CL1		= ((mr0_cl >> 1) & 0x7);
+	host_cmd_load_mr(HOST_CMD_1_4, SDRAM_MODE_REG_MR0, MR0.REG, 0x6);//tMOD);
+
+	/*
+	 * Step 10. Issue a ZQCL command to calibrate Rtt and Ron values
+	 * for the process voltage temperature
+	 * (PVT). Prior to normal operation, tZQinit must be satisfied.
+	 */
+	wait_cycle = g_nsih->dii.ac_timing.tZQinit;
+	host_cmd_load(HOST_CMD_1_5, 0x04, CMD_ZQ_CAL, wait_cycle);
+
+	// Step 11. Issue 6 command to the intialization state m/c and wait for it to be done
+	reg_write_ctrl(HOST_CMD_ISSUE, 0x15);
+	while (reg_read_ctrl( HOST_CMD_ISSUE) & 0x10);
+
+	reg_value = ((1 << 1) |						// start_mem_init
+				(1 << 0));						// mem_init_done
+	reg_write_ctrl(MEM_START, reg_value);				// Set the Initialization complete bit.
+
+	/* Wait for Analog DLL to lock */
+	reg_value = reg_read_phy( UNQ_ANALOG_DLL_2);		// 0x160
+	while ((reg_value & 0x00000003) != 0x00000003)
+		reg_value  = reg_read_phy( UNQ_ANALOG_DLL_2);
+}
+
 void mem_init_seq_ddr3 (unsigned int is_resume)
 {
 	int mr0_cl, mr0_wr;
@@ -237,7 +345,10 @@ void mem_init_seq_ddr3 (unsigned int is_resume)
 
 	int reg_value;
 
-	if (is_resume != TRUE) {
+	if (is_resume == TRUE)  {
+		NOTICE("RESUME Memory Init!!\r\n");
+		resume_mem_init_seq_ddr3 ();
+	} else {
 		reg_write_ctrl(MEM_START, 0x1);					// Kick off controller initialization state m/c
 
 		/* Step 01. Power ON. Assert RESET# and ensure CKE is LOW at least max of 10ns or 5tCK */
@@ -251,7 +362,7 @@ void mem_init_seq_ddr3 (unsigned int is_resume)
 		while (reg_read_ctrl(HOST_CMD_ISSUE) & 0x10);
 		/* Issue 2 commands to the intialization state m/c and wait for it to be done. */
 
-	 	/*
+		/*
 	 	 * Step 02. DRAM RESET# pin must be LOW for at least 200us before DRAM is brought out of reset
 	  	 * We can't do this in simulation. Therefore ignore the following warning from the DRAM model:
 	  	 * WARNING: 200 us is required before RST_N goes inactive.
@@ -314,7 +425,7 @@ void mem_init_seq_ddr3 (unsigned int is_resume)
 		else
 			mr0_wr = 0;
 
-		MR0.REG 		= 0;
+		MR0.REG			= 0;
 		MR0.MR0.PD		= 1;					// PD_EXIT
 		MR0.MR0.WR		= mr0_wr;
 		MR0.MR0.DLL		= 1;					// DLL_RESET

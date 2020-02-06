@@ -77,7 +77,6 @@ static void get_dram_information(struct dram_device_info *me)
 void trimset(char *, char *);
 int checkcaldata(char *, char *);
 int trimtest(unsigned int, unsigned int);
-void mem_init_seq_ddr3 (unsigned int is_resume);
 
 int memory_calibration(unsigned int is_resume)
 {
@@ -130,18 +129,7 @@ int memory_initialize(unsigned int is_resume)
 #ifdef DDR_TEST_MODE
 	get_read_test(0x40000000);
 #endif
-	if (ret == 0 && (is_resume == TRUE)) {
-		/* @brief: issue: when resume, sometimes DDR does not work.
-		 * Workaround: initialize DDR and retry calibration.
-		 * need to proof why(ToDo)
-		 */
-		for (i = 0; i < 5; i++) {
-			mem_init_seq_ddr3(FALSE);
-			ret = memory_calibration(is_resume);
-			if (ret != 0)
-				break;
-		}
-	}
+
 	if (ret < 0)
 		return -1;
 
