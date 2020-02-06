@@ -29,8 +29,9 @@
 #define NXE1500_DEF_DDCx_VOL_MAX        3500000				/* UINT = 1uV, 3.5V */
 #define NXE1500_DEF_DDCx_VOL_STEP       12500   			/* UINT = 1uV, 12.5mV */
 
-#define NXE1500_DEF_DDC1_VOL            1000000				/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.3V */
-#define NXE1500_DEF_DDC2_VOL            1000000				/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.1V */
+// MM(DDC1)/CORE(DDC2) typycal voltage 1.1V/1.1V for MM, CORE LVCC
+#define NXE1500_DEF_DDC1_VOL            1100000				/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.3V */
+#define NXE1500_DEF_DDC2_VOL            1100000				/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.1V */
 #define NXE1500_DEF_DDC3_VOL            1500000				/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 3.3V */
 #define NXE1500_DEF_DDC4_VOL            1500000 			/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.6V */
 #define NXE1500_DEF_DDC5_VOL            1000000				/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.6V */
